@@ -1,0 +1,207 @@
+/* Google Fonts - Removed as Helvetica is a system font */
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --accent-color: #000000;
+    --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --container-width: 900px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+.serif {
+    font-family: var(--font-main);
+    font-weight: 600;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity var(--transition);
+}
+
+a:hover {
+    opacity: 0.6;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* --- Single Page Layout --- */
+
+.main-container {
+    width: 100%;
+    /* No max-width on container to allow full bleed sticky */
+}
+
+/* 1. Hero / Top Section */
+/* Combined height of spacer + header + spacer must feel balanced */
+
+.hero-top {
+    /* The space ABOVE the name/photo */
+    height: 55vh;
+    /* Increased to adds more space between top of page and top of image */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    /* Align photo to bottom of this section */
+    padding-bottom: 2rem;
+}
+
+.profile-photo {
+    width: 422px;
+    /* Increased 20% from 351px */
+    height: auto;
+    max-width: 100%;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    /* Sticks exactly at top */
+    background-color: var(--bg-color);
+    /* Solid background to hide content behind */
+    z-index: 1000;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0;
+    /* Vertical padding for the header */
+    border-bottom: 1px solid transparent;
+    transition: box-shadow 0.3s ease;
+}
+
+.home-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-align: center;
+    line-height: 1.1;
+    margin: 0;
+    /* Reset margins for clean sticking */
+}
+
+.scroll-indicator-wrapper {
+    height: 35vh;
+    /* Reduced to ensure indicator is visible on standard screens */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 3rem;
+    pointer-events: none;
+}
+
+/* --- About Section --- */
+.about-section {
+    max-width: var(--container-width);
+    /* Restrict to content box width */
+    margin: 0 auto;
+    padding: 6rem 2rem 12rem 2rem;
+    /* Increased bottom padding */
+    text-align: center;
+}
+
+.about-section p {
+    font-size: 3.5rem;
+    /* Match .home-title */
+    font-weight: 700;
+    /* Match .home-title */
+    color: var(--text-color);
+    letter-spacing: -0.03em;
+    /* Match .home-title */
+    line-height: 1.1;
+    margin-bottom: 2.5rem;
+    /* Space between bio and links */
+}
+
+.about-section p:last-child {
+    margin-bottom: 0;
+}
+
+.about-section a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    /* subtle hover effect prep */
+    transition: border-color 0.2s;
+}
+
+.about-section a:hover {
+    border-bottom-color: var(--text-color);
+}
+
+.scroll-indicator {
+    font-size: 1rem;
+    color: var(--text-color);
+    /* Black/Dark text per request */
+    text-transform: none;
+    /* Title Case/Sentence case per request */
+    animation: fadePulse 2s infinite;
+}
+
+@keyframes fadePulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* 4. Content Area */
+.content-area {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 4rem 2rem 8rem 2rem;
+    /* Bottom padding for scroll space */
+}
+
+/* --- Article Styles (Consolidated) --- */
+.work-item {
+    margin-bottom: 6rem;
+}
+
+.work-meta {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.work-heading {
+    font-size: 2.5rem;
+    /* Larger for single page flow */
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.work-excerpt {
+    font-size: 1.25rem;
+    max-width: 700px;
+    line-height: 1.6;
+}
