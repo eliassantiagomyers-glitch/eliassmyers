@@ -172,6 +172,58 @@ img {
     }
 }
 
+/* --- Mobile Optimization --- */
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 2.2rem;
+        /* Reduced from 3.5rem */
+    }
+
+    .about-section p {
+        font-size: 1.8rem;
+        /* Reduced from 3.5rem */
+    }
+
+    .hero-top {
+        height: 50vh;
+        /* Increased to 50% to strictly center the split */
+        justify-content: flex-end;
+    }
+
+    .scroll-indicator-wrapper {
+        min-height: 40vh;
+        /* Allow it to flex but take up space */
+        height: auto;
+        /* Let content dictate, but ensure balance */
+        padding-bottom: 5rem;
+        /* Ensure indicator clears bottom UI */
+    }
+
+    .profile-photo {
+        max-width: 85%;
+        /* Prevent edge-to-edge overflow */
+        width: auto;
+        /* Allow scaling down */
+        max-height: 45vh;
+        /* Crucial: Prevent image from ever being taller than the container */
+        object-fit: contain;
+    }
+
+    .about-section {
+        padding: 4rem 1.5rem 8rem 1.5rem;
+        /* Reduced padding */
+    }
+
+    .sticky-header {
+        padding: 1rem 0;
+        /* Tighter header */
+    }
+
+    .content-area {
+        padding: 2rem 1.5rem 6rem 1.5rem;
+    }
+}
+
 /* 4. Content Area */
 .content-area {
     max-width: var(--container-width);
