@@ -1,41 +1,81 @@
-# How to Update Your Portfolio
+# How to update the site
 
-Since your site is a static site hosted on GitHub Pages, adding new articles involves updating the data file locally and then pushing those changes to GitHub.
+## Publish a new blog post
 
-## 1. Add a New Article
-I've created a simple tool to help you add articles without editing code manually.
+```bash
+./new-post.sh "Your Post Title"
+```
 
-1.  Open your terminal (Terminal.app).
-2.  Navigate to your website folder:
-    ```bash
-    cd /Users/eliasmyers/website
-    ```
-    *(Or wherever you store the project on your computer)*
+This creates the HTML file, opens it in your terminal editor (nano by default, or set `EDITOR=vim` etc.), then commits and pushes to GitHub when you save and close. The post will be live within about a minute.
 
-3.  Run the add command with the link:
-    ```bash
-    python3 scripts/add_article.py "https://example.com/your-new-article"
-    ```
+To use a different editor permanently, add this to your `~/.zshrc` or `~/.bash_profile`:
 
-4.  **Follow the prompts**:
-    - The script will try to find the Title, Source, and Date automatically.
-    - If it's correct, type `y` and hit Enter.
-    - If not, you can type the correct details when asked.
+```bash
+export EDITOR=nano   # or vim, micro, etc.
+```
 
-This will automatically add the new article to the top of the list in `articles.js`.
+---
 
-## 2. Publish Changes
-Once you've added the articles locally, you need to send the changes to GitHub.
+## Add a byline
 
-1.  **Stage and Commit**:
-    ```bash
-    git add articles.js
-    git commit -m "Add new article: [Article Name]"
-    ```
+```bash
+./new-byline.sh "Publication Name" "Article Title" "https://full-url" "YYYY-MM-DD"
+```
 
-2.  **Push to GitHub**:
-    ```bash
-    git push origin main
-    ```
+Date is optional. Example:
 
-After a minute or two, GitHub Pages will automatically update your live site!
+```bash
+./new-byline.sh "Sacramento Bee" "How Silicon Valley Lost Its Factories" "https://sacbee.com/article/..." "2026-04-01"
+```
+
+Bylines appear newest-first on the site.
+
+---
+
+## Edit an existing post
+
+Just open the file in `posts/`, edit it, then:
+
+```bash
+git add posts/your-post-slug.html
+git commit -m "edit: post title"
+git push
+```
+
+---
+
+## Edit your bio
+
+Open `index.html`, find the `<p class="bio">` section, edit, then commit and push.
+
+---
+
+## Custom domain setup (one time)
+
+1. Buy your domain (Namecheap or Cloudflare Registrar recommended).
+2. In your domain's DNS settings, add:
+   - Type: `CNAME` | Host: `www` | Value: `eliassantiagomyers-glitch.github.io`
+   - Type: `A` | Host: `@` | Value: `185.199.108.153`
+   - Type: `A` | Host: `@` | Value: `185.199.109.153`
+   - Type: `A` | Host: `@` | Value: `185.199.110.153`
+   - Type: `A` | Host: `@` | Value: `185.199.111.153`
+3. In your GitHub repo settings → Pages → Custom domain, enter your domain.
+4. Check "Enforce HTTPS" once it propagates (can take up to 24 hours).
+
+---
+
+## File structure
+
+```
+/
+├── index.html       — landing page
+├── bylines.html     — all bylines
+├── blog.html        — all blog posts
+├── style.css        — all styles
+├── posts.js         — blog post index data
+├── bylines.js       — bylines data
+├── new-post.sh      — CLI: publish new post
+├── new-byline.sh    — CLI: add byline
+└── posts/
+    └── *.html       — individual post pages
+```

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog &mdash; Elias S. Myers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+
+  <header id="site-header">
+    <h1>Elias S. Myers</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="bylines.html">Bylines</a>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <h2>Blog</h2>
+  <p style="font-size:0.88rem;color:#555;font-family:Arial,Helvetica,sans-serif;">
+    Personal writing. Originally published on <em>elias myers &mdash; thoughts &amp; hiccups</em>, 2021&ndash;present.
+  </p>
+
+  <ul class="post-list" id="all-posts">
+  </ul>
+
+  <footer id="site-footer">
+    &copy; Elias S. Myers &mdash;
+    <a href="mailto:eliassantiagomyers@berkeley.edu">eliassantiagomyers@berkeley.edu</a>
+  </footer>
+
+</div>
+
+<script src="posts.js"></script>
+<script>
+  const container = document.getElementById('all-posts');
+  POSTS.forEach(p => {
+    container.innerHTML += `
+      <li>
+        <span class="post-date">${p.date}</span>
+        <span class="post-title">
+          <a href="posts/${p.slug}.html">${p.title}</a>
+          <div class="post-excerpt">${p.excerpt}</div>
+        </span>
+      </li>`;
+  });
+</script>
+</body>
+</html>
