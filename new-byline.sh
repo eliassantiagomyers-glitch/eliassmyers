@@ -16,10 +16,21 @@ TITLE="$2"
 URL="$3"
 DATE="${4:-}"
 
-# Escape single quotes
-PUB_ESC=$(echo "$PUB" | sed "s/'/\\\\'/g")
-TITLE_ESC=$(echo "$TITLE" | sed "s/'/\\\\'/g")
-URL_ESC=$(echo "$URL" | sed "s/'/\\\\'/g")
+# Sanitize: convert curly apostrophes and quotes to straight ones, then escape for JS
+sanitize() {
+  python3 -c "
+import sys
+s = sys.stdin.read()
+s = s.replace('\u2019', \"'\").replace('\u2018', \"'\")
+s = s.replace('\u201c', '\"').replace('\u201d', '\"')
+s = s.replace(\"'\", \"\\\\'\"  )
+sys.stdout.write(s)
+" <<< "$1"
+}
+
+PUB_ESC=$(sanitize "$PUB")
+TITLE_ESC=$(sanitize "$TITLE")
+URL_ESC=$(sanitize "$URL")
 
 # Build the new entry line
 if [ -n "$DATE" ]; then
@@ -41,6 +52,6 @@ echo "Added byline: \"${TITLE}\" — ${PUB}"
 # Git commit and push
 git add bylines.js
 git commit -m "byline: ${TITLE} (${PUB})"
-git push
+git push origin main
 
 echo "Done. Byline live on site."
