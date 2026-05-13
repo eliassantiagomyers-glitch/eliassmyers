@@ -166,7 +166,7 @@ def build(state: dict) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chico Policy Tracker</title>
+<title>Chico Scraper</title>
 <style>
 *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
 
@@ -490,7 +490,7 @@ body {{
 <header class="site-header">
   <div class="header-inner">
     <div class="header-eyebrow">Butte County &middot; California</div>
-    <h1 class="header-title">Chico Policy Tracker</h1>
+    <h1 class="header-title">Chico Scraper</h1>
     <p class="header-desc">City council activity, legislation, and policy decisions affecting Chico and Butte County &mdash; updated automatically.</p>
     <div class="update-pill">
       <span class="live-dot"></span>
