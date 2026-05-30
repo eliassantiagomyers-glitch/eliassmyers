@@ -1,7 +1,7 @@
 """
 build_dashboard.py
-Reads data/state.json produced by scraper.py and generates index.html —
-the Chico Policy Tracker dashboard.
+Reads data/state.json and generates index.html —
+the Chico Policy Tracker newsroom dashboard.
 """
 
 import json
@@ -11,14 +11,6 @@ from pathlib import Path
 STATE_FILE = Path(__file__).parent / "data" / "state.json"
 OUTPUT     = Path(__file__).parent / "index.html"
 
-STATUS_BADGE = {
-    "active":    ("badge-red",   "Active"),
-    "passed":    ("badge-green", "Passed"),
-    "tabled":    ("badge-amber", "Tabled / Continued"),
-    "scheduled": ("badge-info",  "Scheduled"),
-    "unknown":   ("badge-gold",  "Ongoing"),
-}
-
 
 def fmt_date(d: str) -> str:
     try:
@@ -27,581 +19,960 @@ def fmt_date(d: str) -> str:
         return d
 
 
-def badge(cls: str, text: str) -> str:
-    return f'<span class="badge {cls}">{text}</span>'
+def fmt_iso(d: str) -> str:
+    try:
+        return datetime.fromisoformat(d).strftime("%b %-d, %Y · %H:%M UTC")
+    except Exception:
+        return d
 
 
-def render_bill_card(bill: dict, idx: int) -> str:
-    color_cls, label = STATUS_BADGE.get(bill["status"], ("badge-gold", "Ongoing"))
-    appearances = bill["appearances"]
-    count = bill["meeting_count"]
+def render_meeting_cards(meetings: list) -> str:
+    if not meetings:
+        return '<div class="empty">No meetings scraped yet.</div>'
+    cards = []
+    for i, m in enumerate(meetings):
+        date     = fmt_date(m.get("date", ""))
+        title    = m.get("title", f"Meeting {date}")
+        link     = m.get("link", "#")
+        has_min  = m.get("has_minutes") or m.get("type") == "minutes"
+        items    = m.get("items") or m.get("agenda_items", [])
+        status   = "MIN" if has_min else "AGN"
+        scls     = "tag-green" if has_min else "tag-blue"
 
-    timeline_html = ""
-    for i, ap in enumerate(sorted(appearances, key=lambda x: x["date"])):
-        dot_cls = "now" if i == len(appearances) - 1 else "past"
-        sub = f'<div class="tl-sub">{ap["meeting_title"]}</div>' if ap.get("meeting_title") else ""
-        timeline_html += f"""
-          <div class="tl-item">
-            <div class="tl-dot {dot_cls}"></div>
-            <div class="tl-date">{fmt_date(ap["date"])}</div>
-            <div class="tl-event">{ap.get("title_seen", bill["canonical_title"])}</div>
-            {sub}
-          </div>"""
+        item_rows = ""
+        for it in items[:10]:
+            num = f'<span class="row-num">{it["num"]}</span>' if it.get("num") else ""
+            item_rows += f'<div class="item-row">{num}<span class="row-title">{it["title"]}</span></div>'
+        if len(items) > 10:
+            item_rows += f'<div class="item-more">+{len(items)-10} more items</div>'
 
-    expand_id = f"bill-{idx}"
-    return f"""
-    <div class="card">
-      <div class="card-row">
-        <span class="card-num">{count} mtgs</span>
-        <span class="card-title">{bill["canonical_title"]}</span>
-      </div>
-      <div class="card-meta">
-        {badge(color_cls, label)}
-        {badge("badge-slate", f'First: {fmt_date(bill["first_seen"])}')}
-        {badge("badge-slate", f'Last: {fmt_date(bill["last_seen"])}')}
-      </div>
-      <button class="expand-btn" onclick="toggleExpand('{expand_id}', this)">
-        &#8964; Show timeline ({count} appearances)
-      </button>
-      <div class="expand-content" id="{expand_id}">
-        <div class="tl">{timeline_html}</div>
-      </div>
-    </div>"""
+        expand = ""
+        if items:
+            expand = f"""<button class="expand-btn" onclick="xpand('mc{i}',this)">
+                <span class="xicon">▸</span> {len(items)} agenda items
+            </button>
+            <div class="xbody" id="mc{i}">{item_rows}</div>"""
 
-
-def render_meeting_card(meeting: dict, idx: int) -> str:
-    has_min  = meeting.get("has_minutes") or meeting.get("type") == "minutes"
-    date_str = fmt_date(meeting["date"])
-    title    = meeting.get("title", f"Meeting {date_str}")
-    link     = meeting.get("link", "#")
-    items    = meeting.get("items") or meeting.get("agenda_items", [])
-
-    items_html = ""
-    for item in items[:12]:
-        num = f'<span class="card-num">{item["num"]}</span>' if item.get("num") else ""
-        items_html += f'<div class="card-row" style="margin-bottom:4px">{num}<span class="card-title" style="font-size:13px;font-weight:400">{item["title"]}</span></div>'
-    if len(items) > 12:
-        items_html += f'<div class="card-desc">and {len(items) - 12} more items</div>'
-
-    min_badge = badge("badge-green", "&#10003; Minutes available") if has_min else badge("badge-amber", "Agenda only")
-    expand_id = f"mtg-{idx}"
-
-    expand_section = ""
-    if items:
-        expand_section = f"""
-      <button class="expand-btn" onclick="toggleExpand('{expand_id}', this)">
-        &#8964; Show items ({len(items)})
-      </button>
-      <div class="expand-content" id="{expand_id}">{items_html}</div>"""
-
-    source_link = f'<a class="source-link" href="{link}" target="_blank">&#8599; Granicus source</a>' if link and link != "#" else ""
-
-    return f"""
-    <div class="card">
-      <div class="card-row">
-        <span class="card-num">{date_str}</span>
-        <span class="card-title">
-          <a href="{link}" target="_blank" style="color:inherit;text-decoration:none">{title} &#8599;</a>
-        </span>
-      </div>
-      <div class="card-meta">
-        {min_badge}
-        {source_link}
-      </div>
-      {expand_section}
-    </div>"""
+        cards.append(f"""<div class="card" data-id="council-{m.get('date',i)}">
+            <div class="card-top">
+                <div class="card-meta">
+                    <span class="mono date-chip">{date}</span>
+                    <span class="tag {scls}">{status}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="pin-btn" onclick="pinItem(this)" data-title="{title}" data-date="{date}" data-link="{link}" title="Pin to board">⊕</button>
+                </div>
+            </div>
+            <div class="card-title"><a href="{link}" target="_blank">{title}</a></div>
+            {expand}
+        </div>""")
+    return "\n".join(cards)
 
 
-def render_recent_item(it: dict) -> str:
-    num_html = f'<span class="card-num">{it["num"]}</span>' if it.get("num") else ""
-    return (
-        f'<div class="card">'
-        f'<div class="card-row">{num_html}'
-        f'<span class="card-title">{it["title"]}</span>'
-        f'</div></div>'
-    )
+def render_bill_cards(bills: list) -> str:
+    if not bills:
+        return '<div class="empty">No recurring items detected yet. More meetings needed.</div>'
+
+    STATUS_TAG = {
+        "active":    ("tag-red",   "ACTIVE"),
+        "passed":    ("tag-green", "PASSED"),
+        "tabled":    ("tag-amber", "TABLED"),
+        "scheduled": ("tag-blue",  "SCHED"),
+        "unknown":   ("tag-dim",   "ONGOING"),
+    }
+    cards = []
+    for i, b in enumerate(bills):
+        tcls, tlbl = STATUS_TAG.get(b.get("status","unknown"), ("tag-dim","ONGOING"))
+        count      = b.get("meeting_count", 0)
+        first      = fmt_date(b.get("first_seen",""))
+        last       = fmt_date(b.get("last_seen",""))
+        title      = b.get("canonical_title","")
+
+        tl_html = ""
+        for j, ap in enumerate(sorted(b.get("appearances",[]), key=lambda x: x["date"])):
+            dot = "tl-now" if j == len(b.get("appearances",[])) - 1 else "tl-past"
+            tl_html += f"""<div class="tl-row">
+                <div class="tl-dot {dot}"></div>
+                <div><div class="mono tl-date">{fmt_date(ap['date'])}</div>
+                <div class="tl-evt">{ap.get('title_seen', title)}</div></div>
+            </div>"""
+
+        cards.append(f"""<div class="card" data-id="bill-{b.get('id',i)}">
+            <div class="card-top">
+                <div class="card-meta">
+                    <span class="tag {tcls}">{tlbl}</span>
+                    <span class="mono dim">{count} meetings</span>
+                </div>
+                <div class="card-actions">
+                    <button class="pin-btn" onclick="pinItem(this)" data-title="{title}" data-date="{last}" data-link="" title="Pin to board">⊕</button>
+                </div>
+            </div>
+            <div class="card-title">{title}</div>
+            <div class="card-dates mono dim">First: {first} · Last: {last}</div>
+            <button class="expand-btn" onclick="xpand('bc{i}',this)">
+                <span class="xicon">▸</span> Timeline
+            </button>
+            <div class="xbody" id="bc{i}">
+                <div class="timeline">{tl_html}</div>
+            </div>
+        </div>""")
+    return "\n".join(cards)
+
+
+def render_legislation_cards(bills: list) -> str:
+    if not bills:
+        return '<div class="empty">Awaiting LegiScan API key. Bills will appear here once the agent runs.</div>'
+    cards = []
+    for i, b in enumerate(bills):
+        score   = b.get("score", 0)
+        scls    = "tag-green" if score >= 8 else "tag-blue" if score >= 6 else "tag-dim"
+        title   = b.get("title","")
+        bnum    = b.get("bill_number","")
+        url     = b.get("url","#")
+        expl    = b.get("explanation","")
+        action  = b.get("last_action","")
+        adate   = b.get("last_action_date","")
+        topics  = b.get("topics", [])
+        topic_tags = " ".join(f'<span class="tag tag-dim">{t}</span>' for t in topics[:3])
+
+        cards.append(f"""<div class="card" data-id="leg-{b.get('bill_id',i)}">
+            <div class="card-top">
+                <div class="card-meta">
+                    <span class="mono bill-num">{bnum}</span>
+                    <span class="tag {scls}">{score}/10</span>
+                    {topic_tags}
+                </div>
+                <div class="card-actions">
+                    <button class="pin-btn" onclick="pinItem(this)" data-title="{bnum}: {title}" data-date="{adate}" data-link="{url}" title="Pin to board">⊕</button>
+                </div>
+            </div>
+            <div class="card-title"><a href="{url}" target="_blank">{title}</a></div>
+            <div class="card-expl">{expl}</div>
+            <div class="mono dim card-action-line">Last action {adate}: {action[:80]}{"…" if len(action)>80 else ""}</div>
+        </div>""")
+    return "\n".join(cards)
 
 
 def build(state: dict) -> str:
-    meetings = state.get("meetings", [])
-    bills    = state.get("bills", [])
-    updated  = state.get("last_updated", "")
+    meetings    = state.get("meetings", [])
+    bills       = state.get("bills", [])
+    leg_bills   = state.get("state_legislation", [])
+    updated     = state.get("last_updated", "")
+    updated_fmt = fmt_iso(updated)
 
-    try:
-        updated_fmt = datetime.fromisoformat(updated).strftime("%b %-d, %Y at %-I:%M %p UTC")
-    except Exception:
-        updated_fmt = updated or "unknown"
+    n_meetings  = len(meetings)
+    n_bills     = len(bills)
+    n_leg       = len(leg_bills)
+    recent_date = fmt_date(meetings[0]["date"]) if meetings else "—"
 
-    recent_meeting = meetings[0] if meetings else {}
-    recent_date    = fmt_date(recent_meeting.get("date", "")) if recent_meeting else "—"
-    recent_title   = recent_meeting.get("title", "—")
-    recent_title_short = recent_title[:50] + ("…" if len(recent_title) > 50 else "")
+    council_html = render_meeting_cards(meetings)
+    bill_html    = render_bill_cards(bills)
+    leg_html     = render_legislation_cards(leg_bills)
 
-    next_meeting  = next(
-        (m for m in reversed(meetings) if m.get("date", "") > datetime.now().strftime("%Y-%m-%d")),
-        None
-    )
-    next_date_fmt = fmt_date(next_meeting["date"]) if next_meeting else "TBD"
-    tracked_active = sum(1 for b in bills if b["status"] == "active")
-
-    meeting_cards_html = "\n".join(render_meeting_card(m, i) for i, m in enumerate(meetings))
-
-    bill_cards_html = (
-        "\n".join(render_bill_card(b, i) for i, b in enumerate(bills))
-        if bills else
-        '<div class="lead">No recurring agenda items detected yet. Bill tracking improves as more meetings are scraped.</div>'
-    )
-
-    recent_items = recent_meeting.get("items") or recent_meeting.get("agenda_items", [])
-    recent_cards_html = (
-        "\n".join(render_recent_item(it) for it in recent_items[:20])
-        or '<div class="lead">No agenda items found for the most recent meeting.</div>'
-    )
-
-    has_min_recent = recent_meeting.get("has_minutes") or recent_meeting.get("type") == "minutes"
-    minutes_note   = "Minutes are available." if has_min_recent else "Minutes not yet published."
+    # Pre-serialize dashboard data for JS
+    js_meetings = json.dumps([
+        {"date": m.get("date"), "title": m.get("title"),
+         "items": (m.get("items") or m.get("agenda_items", []))[:5]}
+        for m in meetings[:10]
+    ])
+    js_bills = json.dumps([
+        {"title": b.get("canonical_title"), "status": b.get("status"),
+         "meeting_count": b.get("meeting_count"), "last_seen": b.get("last_seen")}
+        for b in bills[:20]
+    ])
+    js_legislation = json.dumps([
+        {"bill_number": b.get("bill_number"), "title": b.get("title"),
+         "score": b.get("score"), "explanation": b.get("explanation")}
+        for b in leg_bills[:20]
+    ])
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chico Scraper</title>
+<title>Chico Policy Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+/* ── Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
 :root {{
-  --gold: #c9a84c;
-  --gold-bg: rgba(201,168,76,0.12);
-  --dark-header: #0f1923;
-  --bg: #f4f1ec;
-  --surface: #ffffff;
-  --surface2: #eeebe4;
-  --border: rgba(0,0,0,0.08);
-  --border2: rgba(0,0,0,0.14);
-  --text: #1a1814;
-  --text2: #6b6660;
-  --text3: #9c9691;
-  --green: #2a5c3f;
-  --green-bg: #e6f0ea;
-  --red: #8b2020;
-  --red-bg: #f5e8e8;
-  --amber: #7a4f00;
-  --amber-bg: #fdf3e0;
-  --blue: #1a3d6b;
-  --blue-bg: #e8eef7;
+    --bg:       #0a0e13;
+    --bg2:      #0f1520;
+    --bg3:      #141c28;
+    --bg4:      #1a2234;
+    --border:   rgba(255,255,255,0.07);
+    --border2:  rgba(255,255,255,0.12);
+    --text:     #d4dce8;
+    --text2:    #7a8a9e;
+    --text3:    #4a5568;
+    --green:    #00c896;
+    --green2:   rgba(0,200,150,0.12);
+    --blue:     #3b82f6;
+    --blue2:    rgba(59,130,246,0.12);
+    --red:      #ef4444;
+    --red2:     rgba(239,68,68,0.12);
+    --amber:    #f59e0b;
+    --amber2:   rgba(245,158,11,0.12);
+    --sidebar-w: 200px;
+    --right-w:   300px;
+    --header-h:  44px;
 }}
 
+html, body {{ height: 100%; overflow: hidden; }}
 body {{
-  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.65;
-  min-height: 100vh;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
 }}
+a {{ color: var(--green); text-decoration: none; }}
+a:hover {{ text-decoration: underline; }}
+.mono {{ font-family: 'IBM Plex Mono', monospace; }}
+.dim {{ color: var(--text2); }}
 
-.site-header {{
-  background: var(--dark-header);
-  padding: 2.5rem 2rem 2rem;
-  position: relative;
+/* ── Header ────────────────────────────────────────────────── */
+.header {{
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px;
+    z-index: 100;
+    gap: 16px;
 }}
-.site-header::before {{
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--gold);
+.header-logo {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--green);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
 }}
-.header-inner {{ max-width: 920px; margin: 0 auto; }}
-.header-eyebrow {{
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gold);
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}}
-.header-title {{
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 400;
-  color: #f0ebe2;
-  margin-bottom: 0.3rem;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-}}
-.header-desc {{
-  font-size: 13px;
-  color: #7a7570;
-  margin-bottom: 1rem;
-  max-width: 520px;
-  line-height: 1.5;
-}}
-.update-pill {{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #7a7570;
-  border: 0.5px solid #2a3540;
-  border-radius: 20px;
-  padding: 3px 11px;
+.header-logo span {{ color: var(--text3); }}
+.header-spacer {{ flex: 1; }}
+.header-meta {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    display: flex; align-items: center; gap: 12px;
 }}
 .live-dot {{
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--gold);
-  animation: blink 2s ease-in-out infinite;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2.5s ease-in-out infinite;
+    flex-shrink: 0;
 }}
-@keyframes blink {{ 0%,100%{{opacity:1;}} 50%{{opacity:0.3;}} }}
+@keyframes pulse {{ 0%,100%{{opacity:1;}} 50%{{opacity:0.2;}} }}
 
-.container {{ max-width: 920px; margin: 0 auto; padding: 2rem 2rem 4rem; }}
+/* ── Layout ─────────────────────────────────────────────────── */
+.layout {{
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr var(--right-w);
+    grid-template-rows: 1fr;
+    height: 100vh;
+    padding-top: var(--header-h);
+}}
 
-.stats-row {{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-  margin-bottom: 2rem;
+/* ── Left Sidebar ───────────────────────────────────────────── */
+.sidebar {{
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }}
-.stat {{
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem 1.1rem;
+.sidebar-section {{
+    padding: 0 12px;
+    margin-bottom: 8px;
 }}
-.stat-label {{ font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }}
-.stat-val {{ font-size: 1.9rem; font-weight: 400; color: var(--text); line-height: 1; }}
-.stat-val.sm {{ font-size: 1.3rem; padding-top: 4px; }}
-.stat-sub {{ font-size: 11px; color: var(--text2); margin-top: 3px; }}
+.sidebar-label {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 4px 6px;
+}}
+.nav-item {{
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    transition: all 0.15s;
+    position: relative;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    user-select: none;
+}}
+.nav-item:hover {{
+    background: var(--bg3);
+    color: var(--text);
+}}
+.nav-item.active {{
+    background: var(--bg3);
+    color: var(--green);
+    border-color: rgba(0,200,150,0.2);
+}}
+.nav-item.active::before {{
+    content: '';
+    position: absolute; left: -12px; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 20px;
+    background: var(--green);
+    border-radius: 0 2px 2px 0;
+}}
+.nav-icon {{ font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }}
+.nav-label {{ flex: 1; }}
+.nav-count {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    background: var(--bg4);
+    color: var(--text3);
+    padding: 1px 6px;
+    border-radius: 10px;
+}}
+.nav-soon {{
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    font-family: 'IBM Plex Mono', monospace;
+}}
+.sidebar-divider {{
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 8px 12px;
+}}
 
-.tabs {{
-  display: flex;
-  flex-wrap: wrap;
-  border-bottom: 0.5px solid var(--border);
-  margin-bottom: 1.5rem;
+/* ── Center Panel ───────────────────────────────────────────── */
+.main {{
+    overflow-y: auto;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
 }}
-.tab-btn {{
-  font-size: 13px;
-  font-weight: 400;
-  padding: 8px 15px;
-  border: none;
-  background: none;
-  color: var(--text2);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -0.5px;
-  white-space: nowrap;
-  font-family: inherit;
-  transition: color 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.main-header {{
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 12px;
 }}
-.tab-btn:hover {{ color: var(--text); }}
-.tab-btn.active {{ color: var(--text); border-bottom-color: var(--gold); font-weight: 500; }}
-.tab-pill {{
-  font-size: 10px;
-  background: var(--surface2);
-  color: var(--text3);
-  border-radius: 20px;
-  padding: 1px 7px;
+.main-title {{
+    font-size: 15px; font-weight: 500;
+    color: var(--text);
+    flex: 1;
 }}
-.tab-soon {{
-  font-size: 10px;
-  background: var(--gold-bg);
-  color: var(--gold);
-  border-radius: 20px;
-  padding: 1px 7px;
+.main-subtitle {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text3);
 }}
+.main-body {{ padding: 16px 20px; flex: 1; }}
+
 .panel {{ display: none; }}
 .panel.active {{ display: block; }}
 
+/* ── Cards ──────────────────────────────────────────────────── */
 .card {{
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  margin-bottom: 0.75rem;
-  transition: border-color 0.15s;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
 }}
 .card:hover {{ border-color: var(--border2); }}
-.card-row {{
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 6px;
+.card-top {{
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 8px;
 }}
-.card-num {{
-  font-size: 11px;
-  color: var(--text3);
-  min-width: 44px;
-  padding-top: 2px;
-  font-weight: 500;
-  white-space: nowrap;
-}}
+.card-meta {{ display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }}
+.card-actions {{ display: flex; gap: 6px; flex-shrink: 0; }}
 .card-title {{
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  flex: 1;
-  line-height: 1.35;
+    font-size: 14px; font-weight: 500;
+    color: var(--text); line-height: 1.4;
+    margin-bottom: 6px;
 }}
-.card-desc {{
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.6;
-  margin-top: 4px;
+.card-title a {{ color: var(--text); }}
+.card-title a:hover {{ color: var(--green); text-decoration: none; }}
+.card-dates {{ font-size: 11px; margin-bottom: 6px; }}
+.card-expl {{
+    font-size: 12px; color: var(--text2);
+    line-height: 1.65; margin-bottom: 6px;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border-radius: 4px;
+    border-left: 2px solid var(--blue);
 }}
-.card-meta {{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
-  align-items: center;
-}}
-.source-link {{
-  font-size: 12px;
-  color: var(--blue);
-  text-decoration: none;
-}}
-.source-link:hover {{ text-decoration: underline; }}
+.card-action-line {{ font-size: 11px; margin-top: 6px; }}
+.bill-num {{ color: var(--blue); font-size: 12px; }}
+.date-chip {{ font-size: 11px; color: var(--text2); }}
 
-.badge {{
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 9px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
+/* Tags */
+.tag {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    padding: 2px 7px; border-radius: 3px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }}
-.badge-green  {{ background: var(--green-bg);  color: var(--green);  }}
-.badge-red    {{ background: var(--red-bg);    color: var(--red);    }}
-.badge-amber  {{ background: var(--amber-bg);  color: var(--amber);  }}
-.badge-info   {{ background: var(--blue-bg);   color: var(--blue);   }}
-.badge-slate  {{ background: var(--surface2);  color: var(--text2);  }}
-.badge-gold   {{ background: var(--gold-bg);   color: var(--gold);   }}
+.tag-green  {{ background: var(--green2); color: var(--green); }}
+.tag-blue   {{ background: var(--blue2);  color: var(--blue);  }}
+.tag-red    {{ background: var(--red2);   color: var(--red);   }}
+.tag-amber  {{ background: var(--amber2); color: var(--amber); }}
+.tag-dim    {{ background: var(--bg4);    color: var(--text3); }}
 
+/* Expand */
 .expand-btn {{
-  font-size: 12px;
-  color: var(--text2);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-top: 6px;
-  font-family: inherit;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    background: none; border: none; cursor: pointer;
+    padding: 4px 0; margin-top: 4px;
+    display: flex; align-items: center; gap: 5px;
+    transition: color 0.15s;
 }}
 .expand-btn:hover {{ color: var(--text); }}
-.expand-content {{
-  display: none;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 0.5px solid var(--border);
-}}
-.expand-content.open {{ display: block; }}
+.expand-btn.open .xicon {{ transform: rotate(90deg); }}
+.xicon {{ display: inline-block; transition: transform 0.2s; font-size: 10px; }}
+.xbody {{ display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }}
+.xbody.open {{ display: block; }}
 
-.lead {{
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.2rem;
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 10px;
-  border-left: 3px solid var(--gold);
+/* Item rows */
+.item-row {{
+    display: flex; gap: 8px; padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
 }}
-.lead strong {{ color: var(--text); font-weight: 500; }}
+.item-row:last-child {{ border-bottom: none; }}
+.row-num {{ color: var(--text3); font-family: 'IBM Plex Mono', monospace; font-size: 11px; min-width: 36px; }}
+.row-title {{ color: var(--text2); }}
+.item-more {{ font-size: 11px; color: var(--text3); padding: 4px 0; font-family: 'IBM Plex Mono', monospace; }}
 
-.tl {{ position: relative; padding-left: 20px; margin-top: 4px; }}
-.tl::before {{
-  content: '';
-  position: absolute;
-  left: 4px; top: 6px; bottom: 6px;
-  width: 1px;
-  background: var(--border2);
+/* Timeline */
+.timeline {{ padding-left: 14px; }}
+.tl-row {{ display: flex; gap: 12px; margin-bottom: 12px; position: relative; }}
+.tl-row::before {{
+    content: ''; position: absolute;
+    left: -10px; top: 14px; bottom: -12px;
+    width: 1px; background: var(--border2);
 }}
-.tl-item {{ position: relative; margin-bottom: 1rem; }}
+.tl-row:last-child::before {{ display: none; }}
 .tl-dot {{
-  position: absolute;
-  left: -17px; top: 5px;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border2);
-  background: var(--surface);
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+    position: relative; left: -14px; margin-right: -8px;
 }}
-.tl-dot.past {{ background: var(--text2); border-color: var(--text2); }}
-.tl-dot.now  {{ background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-bg); }}
-.tl-date  {{ font-size: 11px; color: var(--text3); margin-bottom: 1px; }}
-.tl-event {{ font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.4; }}
-.tl-sub   {{ font-size: 12px; color: var(--text2); margin-top: 2px; }}
+.tl-past {{ background: var(--text3); }}
+.tl-now  {{ background: var(--green); box-shadow: 0 0 0 3px var(--green2); }}
+.tl-date {{ font-size: 10px; color: var(--text3); margin-bottom: 2px; }}
+.tl-evt  {{ font-size: 12px; color: var(--text2); }}
 
-.section-label {{
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 0.875rem;
+/* Pin button */
+.pin-btn {{
+    background: none; border: 1px solid var(--border);
+    color: var(--text3); cursor: pointer;
+    font-size: 14px; width: 26px; height: 26px;
+    border-radius: 4px; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s;
+    line-height: 1;
+}}
+.pin-btn:hover {{ border-color: var(--green); color: var(--green); }}
+.pin-btn.pinned {{ border-color: var(--green); color: var(--green); background: var(--green2); }}
+
+.empty {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: var(--text3);
+    padding: 24px 16px;
+    border: 1px dashed var(--border);
+    border-radius: 8px; text-align: center;
 }}
 
-.placeholder-card {{
-  background: var(--surface2);
-  border: 0.5px dashed var(--border2);
-  border-radius: 10px;
-  padding: 2rem 1.5rem;
-  margin-bottom: 0.75rem;
-  text-align: center;
-  color: var(--text2);
+/* ── Right Column ───────────────────────────────────────────── */
+.right-col {{
+    display: flex; flex-direction: column;
+    border-left: 1px solid var(--border);
+    background: var(--bg2);
+    overflow: hidden;
 }}
-.placeholder-card p {{ font-size: 13px; line-height: 1.6; }}
-.placeholder-card strong {{ color: var(--text); }}
 
-.site-footer {{
-  border-top: 0.5px solid var(--border);
-  padding: 1.25rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text3);
-  max-width: 920px;
-  margin: 0 auto;
+/* Pinboard */
+.pinboard {{
+    flex: 1; overflow-y: auto;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    min-height: 0;
 }}
-.site-footer a {{ color: var(--text2); text-decoration: none; }}
-.site-footer a:hover {{ text-decoration: underline; }}
+.panel-header {{
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg2);
+    position: sticky; top: 0; z-index: 5;
+    flex-shrink: 0;
+}}
+.panel-header-title {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    color: var(--green); letter-spacing: 0.08em;
+    text-transform: uppercase; flex: 1;
+}}
+.panel-header-count {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--text3);
+}}
+.pinboard-body {{ padding: 10px 12px; flex: 1; overflow-y: auto; }}
+.pin-card {{
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}}
+.pin-card-title {{ font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.4; }}
+.pin-card-date {{ font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text3); margin-bottom: 6px; }}
+.pin-note {{
+    width: 100%; background: var(--bg4);
+    border: 1px solid var(--border); color: var(--text2);
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 11px;
+    padding: 5px 8px; border-radius: 4px; resize: none;
+    margin-top: 4px; line-height: 1.5;
+}}
+.pin-note:focus {{ outline: none; border-color: var(--green); }}
+.pin-card-actions {{ display: flex; justify-content: flex-end; margin-top: 6px; }}
+.unpin-btn {{
+    font-size: 10px; color: var(--text3);
+    background: none; border: none; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 2px 6px; border-radius: 3px;
+    transition: color 0.15s;
+}}
+.unpin-btn:hover {{ color: var(--red); }}
+.pinboard-empty {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    text-align: center; padding: 24px 12px;
+    line-height: 1.8;
+}}
 
-@media (max-width: 600px) {{
-  .site-header {{ padding: 2rem 1.25rem 1.5rem; }}
-  .container {{ padding: 1.25rem 1.25rem 3rem; }}
-  .stats-row {{ grid-template-columns: repeat(2, 1fr); }}
-  .tabs {{ overflow-x: auto; flex-wrap: nowrap; }}
+/* AI Chat */
+.ai-chat {{
+    height: 45%;
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
 }}
+.chat-messages {{
+    flex: 1; overflow-y: auto;
+    padding: 10px 12px;
+}}
+.chat-msg {{
+    margin-bottom: 10px;
+    font-size: 12px; line-height: 1.65;
+}}
+.chat-msg.user {{ color: var(--blue); }}
+.chat-msg.assistant {{ color: var(--text2); }}
+.chat-msg.assistant strong {{ color: var(--text); }}
+.chat-msg-label {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; color: var(--text3);
+    margin-bottom: 3px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+}}
+.chat-msg-text {{
+    background: var(--bg3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+}}
+.chat-msg.user .chat-msg-text {{ border-color: rgba(59,130,246,0.2); }}
+.chat-msg.assistant .chat-msg-text {{ border-color: var(--border); }}
+.chat-input-area {{
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}}
+.chat-key-row {{
+    display: flex; gap: 6px; margin-bottom: 8px;
+}}
+.chat-key-input {{
+    flex: 1; background: var(--bg3);
+    border: 1px solid var(--border); color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 5px 8px; border-radius: 4px;
+}}
+.chat-key-input:focus {{ outline: none; border-color: var(--blue); }}
+.chat-key-btn {{
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    background: var(--blue2); color: var(--blue);
+    border: 1px solid rgba(59,130,246,0.3);
+    padding: 5px 10px; border-radius: 4px; cursor: pointer;
+    white-space: nowrap;
+}}
+.chat-input-row {{ display: flex; gap: 6px; }}
+.chat-input {{
+    flex: 1; background: var(--bg3);
+    border: 1px solid var(--border); color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 12px;
+    padding: 7px 10px; border-radius: 4px;
+    resize: none;
+}}
+.chat-input:focus {{ outline: none; border-color: var(--green); }}
+.chat-send {{
+    background: var(--green2); color: var(--green);
+    border: 1px solid rgba(0,200,150,0.3);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    padding: 0 12px; border-radius: 4px; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+    align-self: flex-end; height: 34px;
+}}
+.chat-send:hover {{ background: rgba(0,200,150,0.2); }}
+.chat-send:disabled {{ opacity: 0.4; cursor: not-allowed; }}
+.chat-thinking {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    padding: 4px 0; display: none;
+}}
+.chat-thinking.show {{ display: block; }}
+
+/* Scrollbars */
+::-webkit-scrollbar {{ width: 4px; }}
+::-webkit-scrollbar-track {{ background: transparent; }}
+::-webkit-scrollbar-thumb {{ background: var(--bg4); border-radius: 2px; }}
+::-webkit-scrollbar-thumb:hover {{ background: var(--border2); }}
 </style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-eyebrow">Butte County &middot; California</div>
-    <h1 class="header-title">Chico Scraper</h1>
-    <p class="header-desc">City council activity, legislation, and policy decisions affecting Chico and Butte County &mdash; updated automatically.</p>
-    <div class="update-pill">
-      <span class="live-dot"></span>
-      Last updated: {updated_fmt}
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+<header class="header">
+    <div class="header-logo">CHICO<span>/</span>POLICY<span>/</span>TRACKER</div>
+    <div class="header-spacer"></div>
+    <div class="header-meta">
+        <span class="live-dot"></span>
+        <span>Updated {updated_fmt}</span>
+        <span style="color:var(--border2)">|</span>
+        <span>{n_meetings} meetings · {n_bills} tracked · {n_leg} bills</span>
     </div>
-  </div>
 </header>
 
-<div class="container">
+<!-- ═══ LAYOUT ════════════════════════════════════════════════════════ -->
+<div class="layout">
 
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label">Meetings tracked</div>
-      <div class="stat-val">{len(meetings)}</div>
-      <div class="stat-sub">agendas + minutes</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Recurring items</div>
-      <div class="stat-val">{len(bills)}</div>
-      <div class="stat-sub">{tracked_active} currently active</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Most recent</div>
-      <div class="stat-val sm">{recent_date}</div>
-      <div class="stat-sub">{recent_title_short}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Next meeting</div>
-      <div class="stat-val sm">{next_date_fmt}</div>
-      <div class="stat-sub">per published agenda</div>
-    </div>
-  </div>
+    <!-- ── LEFT SIDEBAR ── -->
+    <nav class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-label">Local</div>
+            <div class="nav-item active" onclick="showPanel('council', this)">
+                <span class="nav-icon">⬡</span>
+                <span class="nav-label">City Council</span>
+                <span class="nav-count">{n_meetings}</span>
+            </div>
+            <div class="nav-item" onclick="showPanel('bills', this)">
+                <span class="nav-icon">↻</span>
+                <span class="nav-label">Bill Tracker</span>
+                <span class="nav-count">{n_bills}</span>
+            </div>
+        </div>
 
-  <div class="tabs" role="tablist">
-    <button class="tab-btn active" onclick="showTab('council', this)">
-      Council <span class="tab-pill">{len(meetings)}</span>
-    </button>
-    <button class="tab-btn" onclick="showTab('bills', this)">
-      Bill tracker <span class="tab-pill">{len(bills)}</span>
-    </button>
-    <button class="tab-btn" onclick="showTab('state', this)">
-      State leg. <span class="tab-soon">Soon</span>
-    </button>
-    <button class="tab-btn" onclick="showTab('federal', this)">
-      Federal <span class="tab-soon">Soon</span>
-    </button>
-    <button class="tab-btn" onclick="showTab('agency', this)">
-      Agency policy <span class="tab-soon">Soon</span>
-    </button>
-  </div>
+        <hr class="sidebar-divider">
 
-  <div id="panel-council" class="panel active">
-    <div class="lead">
-      <strong>{recent_title}</strong><br>
-      Most recently published meeting &mdash; {recent_date}. {minutes_note}
+        <div class="sidebar-section">
+            <div class="sidebar-label">State</div>
+            <div class="nav-item" onclick="showPanel('legislation', this)">
+                <span class="nav-icon">◈</span>
+                <span class="nav-label">CA Legislation</span>
+                <span class="nav-count">{n_leg}</span>
+            </div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Federal · Coming Soon</div>
+            <div class="nav-item" style="opacity:0.4; cursor:default;">
+                <span class="nav-icon">◇</span>
+                <span class="nav-label">Congress</span>
+                <span class="nav-soon">SOON</span>
+            </div>
+            <div class="nav-item" style="opacity:0.4; cursor:default;">
+                <span class="nav-icon">◇</span>
+                <span class="nav-label">Agency Policy</span>
+                <span class="nav-soon">SOON</span>
+            </div>
+            <div class="nav-item" style="opacity:0.4; cursor:default;">
+                <span class="nav-icon">◇</span>
+                <span class="nav-label">Police Scanner</span>
+                <span class="nav-soon">SOON</span>
+            </div>
+            <div class="nav-item" style="opacity:0.4; cursor:default;">
+                <span class="nav-icon">◇</span>
+                <span class="nav-label">Local Events</span>
+                <span class="nav-soon">SOON</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── CENTER MAIN ── -->
+    <main class="main">
+        <!-- Council panel -->
+        <div id="panel-council" class="panel active">
+            <div class="main-header">
+                <div>
+                    <div class="main-title">City Council Meetings</div>
+                    <div class="main-subtitle mono">Chico, CA · Granicus RSS · {n_meetings} meetings</div>
+                </div>
+            </div>
+            <div class="main-body">{council_html}</div>
+        </div>
+
+        <!-- Bill tracker panel -->
+        <div id="panel-bills" class="panel">
+            <div class="main-header">
+                <div>
+                    <div class="main-title">Bill Tracker</div>
+                    <div class="main-subtitle mono">Recurring agenda items across meetings · {n_bills} tracked</div>
+                </div>
+            </div>
+            <div class="main-body">{bill_html}</div>
+        </div>
+
+        <!-- CA Legislation panel -->
+        <div id="panel-legislation" class="panel">
+            <div class="main-header">
+                <div>
+                    <div class="main-title">California Legislation</div>
+                    <div class="main-subtitle mono">LegiScan · Gemini relevance filter · {n_leg} flagged for Butte County</div>
+                </div>
+            </div>
+            <div class="main-body">{leg_html}</div>
+        </div>
+    </main>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <div class="right-col">
+
+        <!-- Pinboard -->
+        <div class="pinboard">
+            <div class="panel-header">
+                <span class="panel-header-title">⊕ Pinboard</span>
+                <span class="panel-header-count" id="pin-count">0 pins</span>
+            </div>
+            <div class="pinboard-body" id="pinboard-body">
+                <div class="pinboard-empty" id="pinboard-empty">
+                    No pins yet.<br>
+                    Click ⊕ on any card<br>to pin it here.
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Chat -->
+        <div class="ai-chat">
+            <div class="panel-header">
+                <span class="panel-header-title">◈ AI Analysis</span>
+                <span class="panel-header-count">Gemini</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-msg assistant">
+                    <div class="chat-msg-label">System</div>
+                    <div class="chat-msg-text">Ask me anything about the data on this dashboard. I can analyze council items, legislation, and help you find story angles.</div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-key-row" id="key-row">
+                    <input class="chat-key-input" id="gemini-key" type="password" placeholder="Enter Gemini API key…">
+                    <button class="chat-key-btn" onclick="saveKey()">Save</button>
+                </div>
+                <div class="chat-input-row">
+                    <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ask about the data…" onkeydown="chatKeydown(event)"></textarea>
+                    <button class="chat-send" id="chat-send" onclick="sendChat()" disabled>Send</button>
+                </div>
+                <div class="chat-thinking" id="chat-thinking">Gemini is thinking…</div>
+            </div>
+        </div>
     </div>
-    <div class="section-label">Latest agenda items</div>
-    {recent_cards_html}
-    <div class="section-label" style="margin-top:2rem">All meetings</div>
-    {meeting_cards_html}
-  </div>
-
-  <div id="panel-bills" class="panel">
-    <div class="lead">
-      Items appearing on <strong>multiple meeting agendas</strong> are tracked here as recurring bills.
-      Detected by comparing agenda item titles across meetings.
-      <strong>{len(bills)} recurring items</strong> found so far.
-    </div>
-    <div class="section-label">Tracked items &mdash; most recent first</div>
-    {bill_cards_html}
-  </div>
-
-  <div id="panel-state" class="panel">
-    <div class="section-label">California state legislation</div>
-    <div class="placeholder-card">
-      <p><strong>Coming soon.</strong> California bills and agency rules with relevance to Chico and Butte County, filtered via the LegiScan and CA Legislative APIs.</p>
-    </div>
-  </div>
-
-  <div id="panel-federal" class="panel">
-    <div class="section-label">Federal legislation</div>
-    <div class="placeholder-card">
-      <p><strong>Coming soon.</strong> Federal bills affecting housing, water, infrastructure, and agriculture in Butte County &mdash; via Congress.gov API.</p>
-    </div>
-  </div>
-
-  <div id="panel-agency" class="panel">
-    <div class="section-label">Agency policy changes</div>
-    <div class="placeholder-card">
-      <p><strong>Coming soon.</strong> Regulatory and policy changes from CalOES, EPA, CDFA, FEMA, and other agencies relevant to Butte County.</p>
-    </div>
-  </div>
-
 </div>
 
-<footer class="site-footer">
-  <span>Source: <a href="https://chico-ca.granicus.com/ViewPublisher.php?view_id=2" target="_blank">Chico Granicus</a> &middot; Updated twice daily via GitHub Actions</span>
-  <a href="https://github.com/eliassantiagomyers-glitch/Chico-scraper" target="_blank">GitHub &rarr;</a>
-</footer>
-
 <script>
-function showTab(id, btn) {{
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
-  btn.classList.add('active');
+// ── Dashboard data available to Gemini ───────────────────────────────
+const DASHBOARD_DATA = {{
+    meetings: {js_meetings},
+    bills: {js_bills},
+    legislation: {js_legislation},
+    updated: "{updated_fmt}",
+    location: "Chico, CA / Butte County"
+}};
+
+// ── Panel switching ───────────────────────────────────────────────────
+function showPanel(id, navEl) {{
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    navEl.classList.add('active');
 }}
-function toggleExpand(id, btn) {{
-  const el = document.getElementById(id);
-  el.classList.toggle('open');
+
+// ── Expand/collapse ───────────────────────────────────────────────────
+function xpand(id, btn) {{
+    const el = document.getElementById(id);
+    const open = el.classList.toggle('open');
+    btn.classList.toggle('open', open);
 }}
+
+// ── Pinboard ──────────────────────────────────────────────────────────
+let pins = JSON.parse(localStorage.getItem('cpt_pins') || '[]');
+
+function savePins() {{
+    localStorage.setItem('cpt_pins', JSON.stringify(pins));
+    renderPins();
+}}
+
+function pinItem(btn) {{
+    const title = btn.dataset.title;
+    const date  = btn.dataset.date;
+    const link  = btn.dataset.link;
+    const id    = btoa(title).slice(0, 16);
+
+    if (pins.find(p => p.id === id)) {{
+        pins = pins.filter(p => p.id !== id);
+        btn.classList.remove('pinned');
+        savePins();
+        return;
+    }}
+
+    pins.unshift({{ id, title, date, link, note: '', pinned_at: new Date().toISOString() }});
+    btn.classList.add('pinned');
+    savePins();
+}}
+
+function unpin(id) {{
+    pins = pins.filter(p => p.id !== id);
+    savePins();
+}}
+
+function updateNote(id, val) {{
+    const pin = pins.find(p => p.id === id);
+    if (pin) {{ pin.note = val; savePins(); }}
+}}
+
+function renderPins() {{
+    const body  = document.getElementById('pinboard-body');
+    const empty = document.getElementById('pinboard-empty');
+    const count = document.getElementById('pin-count');
+    count.textContent = pins.length + ' pin' + (pins.length !== 1 ? 's' : '');
+
+    if (!pins.length) {{
+        body.innerHTML = '';
+        body.appendChild(empty || document.createElement('div'));
+        if (empty) empty.style.display = 'block';
+        return;
+    }}
+    if (empty) empty.style.display = 'none';
+
+    body.innerHTML = pins.map(p => `
+        <div class="pin-card" id="pin-${{p.id}}">
+            <div class="pin-card-title">${{p.title}}</div>
+            <div class="pin-card-date mono">${{p.date}}${{p.link ? ` · <a href="${{p.link}}" target="_blank">source ↗</a>` : ''}}</div>
+            <textarea class="pin-note" rows="2" placeholder="Add notes…"
+                onchange="updateNote('${{p.id}}', this.value)">${{p.note}}</textarea>
+            <div class="pin-card-actions">
+                <button class="unpin-btn" onclick="unpin('${{p.id}}')">unpin ×</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Restore pinned button states
+    document.querySelectorAll('.pin-btn').forEach(btn => {{
+        const id = btoa(btn.dataset.title).slice(0, 16);
+        if (pins.find(p => p.id === id)) btn.classList.add('pinned');
+    }});
+}}
+
+// ── Gemini Chat ───────────────────────────────────────────────────────
+let geminiKey = localStorage.getItem('cpt_gemini_key') || '';
+
+function saveKey() {{
+    geminiKey = document.getElementById('gemini-key').value.trim();
+    if (geminiKey) {{
+        localStorage.setItem('cpt_gemini_key', geminiKey);
+        document.getElementById('key-row').style.display = 'none';
+        document.getElementById('chat-send').disabled = false;
+        addMsg('system', 'API key saved. Ready to analyze dashboard data.');
+    }}
+}}
+
+function chatKeydown(e) {{
+    if (e.key === 'Enter' && !e.shiftKey) {{
+        e.preventDefault();
+        sendChat();
+    }}
+}}
+
+function addMsg(role, text) {{
+    const wrap = document.getElementById('chat-messages');
+    const label = role === 'user' ? 'You' : role === 'assistant' ? 'Gemini' : 'System';
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'assistant');
+    div.innerHTML = `<div class="chat-msg-label">${{label}}</div><div class="chat-msg-text">${{text}}</div>`;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+}}
+
+async function sendChat() {{
+    if (!geminiKey) {{ addMsg('system', 'Please enter your Gemini API key first.'); return; }}
+    const input = document.getElementById('chat-input');
+    const q = input.value.trim();
+    if (!q) return;
+
+    input.value = '';
+    addMsg('user', q);
+
+    const thinking = document.getElementById('chat-thinking');
+    const sendBtn  = document.getElementById('chat-send');
+    thinking.classList.add('show');
+    sendBtn.disabled = true;
+
+    const systemPrompt = `You are an AI assistant embedded in the Chico Policy Tracker, a personal newsroom intelligence dashboard for a journalist covering Chico, CA and Butte County. You have access to the current dashboard data shown below. Answer the journalist's questions concisely and helpfully. Focus on story angles, connections between items, and local impact. If asked to go deeper on something, say what additional data sources would help.
+
+Current dashboard data:
+${{JSON.stringify(DASHBOARD_DATA, null, 2)}}`;
+
+    try {{
+        const resp = await fetch(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey,
+            {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{
+                    contents: [
+                        {{ role: 'user', parts: [{{ text: systemPrompt + '\\n\\nJournalist question: ' + q }}] }}
+                    ],
+                    generationConfig: {{ temperature: 0.7, maxOutputTokens: 600 }}
+                }})
+            }}
+        );
+        const data = await resp.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+        addMsg('assistant', text.replace(/\\n/g, '<br>'));
+    }} catch(e) {{
+        addMsg('assistant', 'Error reaching Gemini: ' + e.message);
+    }}
+
+    thinking.classList.remove('show');
+    sendBtn.disabled = false;
+}}
+
+// ── Init ──────────────────────────────────────────────────────────────
+(function init() {{
+    if (geminiKey) {{
+        document.getElementById('key-row').style.display = 'none';
+        document.getElementById('chat-send').disabled = false;
+        document.getElementById('gemini-key').value = geminiKey;
+    }}
+    renderPins();
+}})();
 </script>
 </body>
 </html>"""
@@ -609,12 +980,13 @@ function toggleExpand(id, btn) {{
 
 def main():
     if not STATE_FILE.exists():
-        print(f"ERROR: {STATE_FILE} not found. Run scraper.py first.")
-        return
-    state = json.loads(STATE_FILE.read_text())
-    html  = build(state)
+        print(f"No state.json found at {{STATE_FILE}} — generating empty dashboard.")
+        state = {{"meetings": [], "bills": [], "state_legislation": [], "last_updated": ""}}
+    else:
+        state = json.loads(STATE_FILE.read_text())
+    html = build(state)
     OUTPUT.write_text(html, encoding="utf-8")
-    print(f"Dashboard written -> {OUTPUT}")
+    print(f"Dashboard written → {{OUTPUT}}")
 
 
 if __name__ == "__main__":
