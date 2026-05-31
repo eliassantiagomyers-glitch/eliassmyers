@@ -26,7 +26,7 @@ from pathlib import Path
 # ── Constants ────────────────────────────────────────────────────────────────
 
 LEGISCAN_BASE   = "https://api.legiscan.com/"
-GEMINI_BASE     = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_BASE     = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 STATE_FILE      = Path(__file__).parent / "data" / "state.json"
 TELEGRAM_API    = "https://api.telegram.org/bot{token}/sendMessage"
 
