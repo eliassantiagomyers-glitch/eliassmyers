@@ -191,7 +191,7 @@ def build(state: dict) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chico Policy Tracker</title>
+<title>Chico Scraper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -638,18 +638,106 @@ a:hover {{ text-decoration: underline; }}
 }}
 .chat-thinking.show {{ display: block; }}
 
-/* Scrollbars */
-::-webkit-scrollbar {{ width: 4px; }}
-::-webkit-scrollbar-track {{ background: transparent; }}
-::-webkit-scrollbar-thumb {{ background: var(--bg4); border-radius: 2px; }}
-::-webkit-scrollbar-thumb:hover {{ background: var(--border2); }}
+/* ── Mobile ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {{
+    :root {{
+        --sidebar-w: 100%;
+        --right-w: 100%;
+        --header-h: 48px;
+    }}
+
+    html, body {{ overflow: auto; height: auto; }}
+
+    .layout {{
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding-top: var(--header-h);
+    }}
+
+    /* Sidebar becomes horizontal scrollable tab strip */
+    .sidebar {{
+        order: 3;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 8px;
+        height: 52px;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        z-index: 100;
+        background: var(--bg2);
+        align-items: center;
+        gap: 4px;
+    }}
+    .sidebar-section {{
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+        padding: 0;
+        margin: 0;
+        align-items: center;
+    }}
+    .sidebar-label, .sidebar-divider {{ display: none; }}
+    .nav-item {{
+        flex-direction: column;
+        padding: 6px 10px;
+        font-size: 10px;
+        gap: 2px;
+        border-radius: 6px;
+        white-space: nowrap;
+        min-width: 60px;
+        text-align: center;
+        margin: 0;
+    }}
+    .nav-item::before {{ display: none; }}
+    .nav-item.active {{ border-color: rgba(0,200,150,0.3); }}
+    .nav-icon {{ font-size: 16px; width: auto; }}
+    .nav-count {{ display: none; }}
+    .nav-soon {{ font-size: 8px; }}
+
+    /* Main takes full width, add bottom padding for tab bar */
+    .main {{
+        order: 1;
+        width: 100%;
+        padding-bottom: 52px;
+        min-height: 60vh;
+    }}
+
+    /* Right column stacks below main */
+    .right-col {{
+        order: 2;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        height: auto;
+        flex-direction: column;
+        margin-bottom: 52px;
+    }}
+    .pinboard {{
+        max-height: 300px;
+        min-height: 120px;
+    }}
+    .ai-chat {{
+        height: 360px;
+    }}
+
+    /* Header compact */
+    .header-meta {{ display: none; }}
+    .header-logo {{ font-size: 12px; }}
+
+    /* Cards full width */
+    .card {{ margin-bottom: 8px; }}
+}}
 </style>
 </head>
 <body>
 
 <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
 <header class="header">
-    <div class="header-logo">CHICO<span>/</span>POLICY<span>/</span>TRACKER</div>
+    <div class="header-logo">CHICO<span> · </span>SCRAPER</div>
     <div class="header-spacer"></div>
     <div class="header-meta">
         <span class="live-dot"></span>
@@ -822,6 +910,16 @@ function xpand(id, btn) {{
 }}
 
 // ── Pinboard ──────────────────────────────────────────────────────────
+function makeId(str) {{
+    // Safe hash — works with any Unicode string unlike btoa()
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {{
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }}
+    return Math.abs(hash).toString(36).slice(0, 12);
+}}
+
 let pins = JSON.parse(localStorage.getItem('cpt_pins') || '[]');
 
 function savePins() {{
@@ -833,7 +931,7 @@ function pinItem(btn) {{
     const title = btn.dataset.title;
     const date  = btn.dataset.date;
     const link  = btn.dataset.link;
-    const id    = btoa(title).slice(0, 16);
+    const id    = makeId(title);
 
     if (pins.find(p => p.id === id)) {{
         pins = pins.filter(p => p.id !== id);
@@ -885,7 +983,7 @@ function renderPins() {{
 
     // Restore pinned button states
     document.querySelectorAll('.pin-btn').forEach(btn => {{
-        const id = btoa(btn.dataset.title).slice(0, 16);
+        const id = makeId(btn.dataset.title);
         if (pins.find(p => p.id === id)) btn.classList.add('pinned');
     }});
 }}
@@ -941,7 +1039,7 @@ ${{JSON.stringify(DASHBOARD_DATA, null, 2)}}`;
 
     try {{
         const resp = await fetch(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey,
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiKey,
             {{
                 method: 'POST',
                 headers: {{ 'Content-Type': 'application/json' }},
@@ -954,10 +1052,14 @@ ${{JSON.stringify(DASHBOARD_DATA, null, 2)}}`;
             }}
         );
         const data = await resp.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
-        addMsg('assistant', text.replace(/\\n/g, '<br>'));
+        if (data.error) {{
+            addMsg('assistant', '⚠ Gemini error: ' + data.error.message);
+        }} else {{
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+            addMsg('assistant', text.replace(/\\n/g, '<br>'));
+        }}
     }} catch(e) {{
-        addMsg('assistant', 'Error reaching Gemini: ' + e.message);
+        addMsg('assistant', '⚠ Request failed: ' + e.message + '. Check your API key and try again.');
     }}
 
     thinking.classList.remove('show');
