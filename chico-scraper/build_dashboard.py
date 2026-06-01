@@ -171,8 +171,14 @@ def build(state: dict) -> str:
 
     # Pre-serialize dashboard data for JS
     js_meetings = json.dumps([
-        {"date": m.get("date"), "title": m.get("title"),
-         "items": (m.get("items") or m.get("agenda_items", []))[:5]}
+        {
+            "date":        m.get("date"),
+            "title":       m.get("title"),
+            "link":        m.get("link", ""),
+            "description": m.get("description", ""),
+            "has_minutes": m.get("has_minutes", False),
+            "items": (m.get("items") or m.get("agenda_items", []))[:15]
+        }
         for m in meetings[:10]
     ])
     js_bills = json.dumps([
@@ -1032,7 +1038,7 @@ async function sendChat() {{
     thinking.classList.add('show');
     sendBtn.disabled = true;
 
-    const systemPrompt = `You are an AI assistant embedded in the Chico Policy Tracker, a personal newsroom intelligence dashboard for a journalist covering Chico, CA and Butte County. You have access to the current dashboard data shown below. Answer the journalist's questions concisely and helpfully. Focus on story angles, connections between items, and local impact. If asked to go deeper on something, say what additional data sources would help.
+    const systemPrompt = `You are an AI assistant embedded in the Chico Scraper, a personal newsroom intelligence dashboard for a journalist covering Chico, CA and Butte County. You have access to the current dashboard data shown below, including meeting titles, dates, agenda items, descriptions, and source links. You also have Google Search available — use it to look up the actual content behind any links, find recent news about agenda items, or get more detail on anything in the data. Answer the journalist's questions concisely and helpfully. Focus on story angles, connections between items, and local impact.
 
 Current dashboard data:
 ${{JSON.stringify(DASHBOARD_DATA, null, 2)}}`;
@@ -1047,7 +1053,8 @@ ${{JSON.stringify(DASHBOARD_DATA, null, 2)}}`;
                     contents: [
                         {{ role: 'user', parts: [{{ text: systemPrompt + '\\n\\nJournalist question: ' + q }}] }}
                     ],
-                    generationConfig: {{ temperature: 0.7, maxOutputTokens: 600 }}
+                    tools: [{{ googleSearch: {{}} }}],
+                    generationConfig: {{ temperature: 0.7, maxOutputTokens: 800 }}
                 }})
             }}
         );
