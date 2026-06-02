@@ -207,7 +207,18 @@ def render_legislation_cards(bills: list) -> str:
 
         sponsor_str = f'<span class="mono dim" style="font-size:11px">Sponsor: {", ".join(sponsors[:2])}</span>' if sponsors else ""
         committee_str = f" · {committee}" if committee else ""
+ sponsor_str = f'<span class="mono dim" style="font-size:11px">Sponsor: {", ".join(sponsors[:2])}</span>' if sponsors else ""
+        committee_str = f" · {committee}" if committee else ""
         expand_id = f"leg{i}"
+
+        if timeline:
+            timeline_btn = (
+                f"<button class='expand-btn' onclick='xpand(\"{expand_id}\",this)'>"
+                f"<span class='xicon'>▸</span> Full timeline ({len(timeline)} actions)</button>"
+                f"<div class='xbody' id='{expand_id}'><div class='timeline'>{tl_rows}</div></div>"
+            )
+        else:
+            timeline_btn = ""
 
         cards.append(f"""<div class="card" data-id="leg-{b.get('bill_id', i)}">
             <div class="card-top">
@@ -234,7 +245,7 @@ def render_legislation_cards(bills: list) -> str:
             </div>
             {sponsor_str}
             <div class="rep-block">{rep_rows}</div>
-            {"<button class='expand-btn' onclick=\"xpand('" + expand_id + "',this)\"><span class='xicon'>▸</span> Full timeline (" + str(len(timeline)) + " actions)</button><div class='xbody' id='" + expand_id + "'><div class='timeline'>" + tl_rows + "</div></div>" if timeline else ""}
+            {timeline_btn}
         </div>""")
 
     return "\n".join(cards)
