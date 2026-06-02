@@ -119,37 +119,124 @@ def render_bill_cards(bills: list) -> str:
     return "\n".join(cards)
 
 
+STATUS_PIPELINE = ["introduced", "committee", "floor", "passed", "failed", "vetoed"]
+
+STATUS_TAG = {
+    "introduced": ("tag-blue",  "Introduced"),
+    "committee":  ("tag-amber", "In Committee"),
+    "floor":      ("tag-blue",  "On Floor"),
+    "active":     ("tag-blue",  "Active"),
+    "passed":     ("tag-green", "Signed into Law"),
+    "failed":     ("tag-red",   "Failed"),
+    "vetoed":     ("tag-red",   "Vetoed"),
+}
+
+VOTE_TAG = {
+    "yes":        ("tag-green", "YES"),
+    "no":         ("tag-red",   "NO"),
+    "absent":     ("tag-dim",   "ABSENT"),
+    "not_voting": ("tag-dim",   "NOT VOTING"),
+    "excused":    ("tag-dim",   "EXCUSED"),
+}
+
+
 def render_legislation_cards(bills: list) -> str:
     if not bills:
-        return '<div class="empty">Awaiting LegiScan API key. Bills will appear here once the agent runs.</div>'
+        return '<div class="empty">No bills flagged yet. The legislation agent will populate this section on the next scheduled run.</div>'
+
     cards = []
     for i, b in enumerate(bills):
-        score   = b.get("score", 0)
-        scls    = "tag-green" if score >= 8 else "tag-blue" if score >= 6 else "tag-dim"
-        title   = b.get("title","")
-        bnum    = b.get("bill_number","")
-        url     = b.get("url","#")
-        expl    = b.get("explanation","")
-        action  = b.get("last_action","")
-        adate   = b.get("last_action_date","")
-        topics  = b.get("topics", [])
-        topic_tags = " ".join(f'<span class="tag tag-dim">{t}</span>' for t in topics[:3])
+        score      = b.get("score", 0)
+        title      = b.get("title", "")
+        bnum       = b.get("bill_number", "")
+        url        = b.get("url", "#")
+        expl       = b.get("explanation", "")
+        local_angle = b.get("local_angle", "")
+        action     = b.get("last_action", "")
+        adate      = b.get("last_action_date", "")
+        committee  = b.get("committee", "")
+        status     = b.get("status", "introduced")
+        status_label = b.get("status_label", "Active")
+        topics     = b.get("topics", [])
+        rep_votes  = b.get("rep_votes", {})
+        rep_notes  = b.get("rep_vote_notes", {})
+        timeline   = b.get("timeline", [])
+        sponsors   = b.get("sponsors", [])
 
-        cards.append(f"""<div class="card" data-id="leg-{b.get('bill_id',i)}">
+        # Status tag
+        stcls, stlbl = STATUS_TAG.get(status, ("tag-dim", status_label))
+
+        # Score color
+        scls = "tag-green" if score >= 8 else "tag-blue" if score >= 6 else "tag-dim"
+
+        # Topic tags
+        topic_tags = " ".join(
+            f'<span class="tag tag-dim">{t}</span>' for t in topics[:3]
+        )
+
+        # Rep vote rows
+        rep_rows = ""
+        for rep_name, vote in rep_votes.items():
+            vcls, vlbl = VOTE_TAG.get(vote.lower(), ("tag-dim", vote.upper()))
+            note = rep_notes.get(rep_name, "")
+            role = "AD-3" if "Gallagher" in rep_name else "SD-1"
+            rep_rows += f"""<div class="rep-row">
+                <div class="rep-info">
+                    <span class="rep-name">{rep_name}</span>
+                    <span class="mono dim rep-role">{role}</span>
+                </div>
+                <span class="tag {vcls}">{vlbl}</span>
+                {"<div class='rep-note dim'>" + note + "</div>" if note else ""}
+            </div>"""
+
+        if not rep_rows:
+            rep_rows = '<div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div>'
+
+        # Timeline rows (hidden by default)
+        tl_rows = ""
+        for j, ev in enumerate(timeline):
+            dot = "tl-now" if j == len(timeline) - 1 else "tl-past"
+            tl_rows += f"""<div class="tl-row">
+                <div class="tl-dot {dot}"></div>
+                <div>
+                    <div class="mono tl-date">{ev.get('date','')}</div>
+                    <div class="tl-evt">{ev.get('description','')}</div>
+                    {"<div class='dim' style='font-size:11px'>" + ev.get('chamber','') + "</div>" if ev.get('chamber') else ""}
+                </div>
+            </div>"""
+
+        sponsor_str = f'<span class="mono dim" style="font-size:11px">Sponsor: {", ".join(sponsors[:2])}</span>' if sponsors else ""
+        committee_str = f" · {committee}" if committee else ""
+        expand_id = f"leg{i}"
+
+        cards.append(f"""<div class="card" data-id="leg-{b.get('bill_id', i)}">
             <div class="card-top">
                 <div class="card-meta">
                     <span class="mono bill-num">{bnum}</span>
+                    <span class="tag {stcls}">{status_label}</span>
                     <span class="tag {scls}">{score}/10</span>
                     {topic_tags}
                 </div>
                 <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)" data-title="{bnum}: {title}" data-date="{adate}" data-link="{url}" title="Pin to board">⊕</button>
+                    <button class="pin-btn" onclick="pinItem(this)"
+                        data-title="{bnum}: {title}"
+                        data-date="{adate}"
+                        data-link="{url}"
+                        title="Pin to board">⊕</button>
                 </div>
             </div>
             <div class="card-title"><a href="{url}" target="_blank">{title}</a></div>
-            <div class="card-expl">{expl}</div>
-            <div class="mono dim card-action-line">Last action {adate}: {action[:80]}{"…" if len(action)>80 else ""}</div>
+            {f'<div class="card-expl">{expl}</div>' if expl else ""}
+            {f'<div class="local-angle">📍 {local_angle}</div>' if local_angle else ""}
+            <div class="card-status-line mono dim">
+                {adate}{committee_str}
+                {" · " + action[:70] + ("…" if len(action) > 70 else "") if action else ""}
+            </div>
+            {sponsor_str}
+            <div class="rep-block">{rep_rows}</div>
+            {"<button class='expand-btn' onclick=\"xpand('" + expand_id + "',this)\"><span class='xicon'>▸</span> Full timeline (" + str(len(timeline)) + " actions)</button><div class='xbody' id='" + expand_id + "'><div class='timeline'>" + tl_rows + "</div></div>" if timeline else ""}
         </div>""")
+
     return "\n".join(cards)
 
 
@@ -644,6 +731,25 @@ a:hover {{ text-decoration: underline; }}
 }}
 .chat-thinking.show {{ display: block; }}
 
+.card-status-line {{ font-size: 11px; color: var(--text3); margin: 4px 0 6px; }}
+.local-angle {{
+    font-size: 12px; color: var(--green);
+    margin-bottom: 6px; line-height: 1.5;
+}}
+.rep-block {{
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 8px;
+}}
+.rep-row {{
+    display: flex; flex-wrap: wrap;
+    align-items: flex-start; gap: 8px;
+}}
+.rep-info {{ display: flex; align-items: center; gap: 6px; flex: 1; min-width: 140px; }}
+.rep-name {{ font-size: 12px; font-weight: 500; color: var(--text); }}
+.rep-role {{ font-size: 10px; }}
+.rep-note {{ font-size: 11px; line-height: 1.5; width: 100%; padding-left: 2px; }}
+
 /* ── Mobile ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {{
     :root {{
@@ -839,7 +945,7 @@ a:hover {{ text-decoration: underline; }}
             <div class="main-header">
                 <div>
                     <div class="main-title">California Legislation</div>
-                    <div class="main-subtitle mono">LegiScan · Gemini relevance filter · {n_leg} flagged for Butte County</div>
+                    <div class="main-subtitle mono">Open States · Gemini relevance filter · {n_leg} flagged for Butte County</div>
                 </div>
             </div>
             <div class="main-body">{leg_html}</div>

@@ -1,6 +1,6 @@
 """
 run.py
-Orchestrator: scrape council → build dashboard → legislation agent → notify.
+Orchestrator: scrape council → build dashboard → legislation agent → rebuild → notify.
 Called by GitHub Actions on a twice-daily cron schedule.
 """
 
@@ -9,21 +9,21 @@ import traceback
 
 
 def main():
-    print("=" * 50)
+    print("=" * 55)
     print("STEP 1: Scraping Granicus RSS feeds")
-    print("=" * 50)
+    print("=" * 55)
     try:
         from scraper import scrape
-        state = scrape()
+        scrape()
     except Exception:
         print("FATAL: scraper failed")
         traceback.print_exc()
         sys.exit(1)
 
     print()
-    print("=" * 50)
-    print("STEP 2: Building dashboard")
-    print("=" * 50)
+    print("=" * 55)
+    print("STEP 2: Building dashboard (pass 1)")
+    print("=" * 55)
     try:
         from build_dashboard import main as build
         build()
@@ -32,20 +32,20 @@ def main():
         traceback.print_exc()
 
     print()
-    print("=" * 50)
-    print("STEP 3: Legislation relevance agent (LegiScan + Gemini)")
-    print("=" * 50)
+    print("=" * 55)
+    print("STEP 3: Legislation agent (Open States + Gemini)")
+    print("=" * 55)
     try:
-        from legiscan_agent import run_agent
+        from legislation_agent import run_agent
         run_agent()
     except Exception:
         print("ERROR: legislation agent failed (non-fatal)")
         traceback.print_exc()
 
     print()
-    print("=" * 50)
+    print("=" * 55)
     print("STEP 4: Rebuilding dashboard with legislation data")
-    print("=" * 50)
+    print("=" * 55)
     try:
         from build_dashboard import main as build
         build()
@@ -54,9 +54,9 @@ def main():
         traceback.print_exc()
 
     print()
-    print("=" * 50)
-    print("STEP 5: Sending council notifications")
-    print("=" * 50)
+    print("=" * 55)
+    print("STEP 5: Sending notifications")
+    print("=" * 55)
     try:
         from notify import notify
         notify()
