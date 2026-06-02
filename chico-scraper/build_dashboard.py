@@ -207,8 +207,6 @@ def render_legislation_cards(bills: list) -> str:
 
         sponsor_str = f'<span class="mono dim" style="font-size:11px">Sponsor: {", ".join(sponsors[:2])}</span>' if sponsors else ""
         committee_str = f" · {committee}" if committee else ""
- sponsor_str = f'<span class="mono dim" style="font-size:11px">Sponsor: {", ".join(sponsors[:2])}</span>' if sponsors else ""
-        committee_str = f" · {committee}" if committee else ""
         expand_id = f"leg{i}"
 
         if timeline:
