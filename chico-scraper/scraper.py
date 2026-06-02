@@ -75,16 +75,18 @@ def parse_rss(xml_text: str) -> list[dict]:
                 pass
         date_str = date_parsed.strftime("%Y-%m-%d") if date_parsed else pub[:10]
 
-        # Extract agenda items from description HTML (Granicus embeds an <ol> or plain text)
+        # Extract agenda items and plain text from description
         items = extract_agenda_items(desc)
+        plain_desc = extract_plain_text(desc)
 
         meetings.append({
-            "title":    title,
-            "link":     link,
-            "date":     date_str,
-            "guid":     guid or hashlib.md5(title.encode()).hexdigest(),
-            "raw_desc": desc,
-            "items":    items,
+            "title":      title,
+            "link":       link,
+            "date":       date_str,
+            "guid":       guid or hashlib.md5(title.encode()).hexdigest(),
+            "raw_desc":   desc,
+            "description": plain_desc,  # plain text version for AI context
+            "items":      items,
         })
     return meetings
 
@@ -99,6 +101,7 @@ def extract_agenda_items(html: str) -> list[dict]:
     clean = re.sub(r"&amp;", "&", clean)
     clean = re.sub(r"&nbsp;", " ", clean)
     clean = re.sub(r"&#\d+;", "", clean)
+    clean = re.sub(r"&[a-z]+;", " ", clean)
     lines = [l.strip() for l in clean.splitlines() if l.strip()]
 
     items = []
@@ -113,6 +116,17 @@ def extract_agenda_items(html: str) -> list[dict]:
         elif re.search(r"\w{4,}", line):  # bare title line
             items.append({"num": "", "title": line})
     return items
+
+
+def extract_plain_text(html: str) -> str:
+    """Strip HTML and return clean plain text from a description field."""
+    text = re.sub(r"<[^>]+>", " ", html)
+    text = re.sub(r"&amp;", "&", text)
+    text = re.sub(r"&nbsp;", " ", text)
+    text = re.sub(r"&#\d+;", "", text)
+    text = re.sub(r"&[a-z]+;", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 def normalize_title(title: str) -> str:
