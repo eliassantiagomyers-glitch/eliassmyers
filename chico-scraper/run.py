@@ -5,6 +5,7 @@ Called by GitHub Actions on a twice-daily cron schedule.
 """
 
 import sys
+import os
 import traceback
 
 
@@ -36,6 +37,8 @@ def main():
     print("STEP 3: Legislation agent (Open States + Gemini)")
     print("=" * 55)
     try:
+        print(f"DEBUG key present: {bool(os.environ.get('OPENSTATES_API_KEY'))}")
+        print(f"DEBUG key length: {len(os.environ.get('OPENSTATES_API_KEY', ''))}")
         from legislation_agent import run_agent
         run_agent()
     except Exception:
