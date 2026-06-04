@@ -279,6 +279,18 @@ def gemini_request(api_key: str, prompt: str, max_tokens: int = 400) -> str:
     return ""
 
 
+
+SKIP_PATTERNS = [
+    "budget act of 20", "budget acts of 20", "taxation: federal conformity",
+    "maintenance of the codes", "omnibus budget trailer", "relative to transgender",
+    "an act to amend sections", "education omnibus", "health omnibus", "public safety omnibus",
+]
+
+def is_obviously_irrelevant(title: str, abstract: str) -> bool:
+    """Return True if bill is obviously statewide boilerplate with no local angle."""
+    combined = (title + " " + (abstract or "")).lower()
+    return any(pat in combined for pat in SKIP_PATTERNS)
+
 def gemini_relevance_filter(api_key: str, bill_number: str, title: str, abstract: str) -> dict:
     """
     Pass 1: Fast relevance filter. Returns score + relevant bool.
@@ -456,6 +468,11 @@ def run_agent():
         if bill_id in existing:
             relevant_bills.append(("existing", bill, existing[bill_id]))
             print(f"    → Already flagged, will update.")
+            continue
+
+        # Pre-filter obviously irrelevant bills without hitting Gemini
+        if is_obviously_irrelevant(title, abstract):
+            print(f"    → Skipped (boilerplate)")
             continue
 
         time.sleep(GEMINI_DELAY)

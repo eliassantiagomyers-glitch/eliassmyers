@@ -1210,7 +1210,7 @@ def main():
         state = json.loads(STATE_FILE.read_text())
     html = build(state)
     OUTPUT.write_text(html, encoding="utf-8")
-    print(f"Dashboard written → {{OUTPUT}}")
+    print(f"Dashboard written → {OUTPUT}")
 
 
 if __name__ == "__main__":
