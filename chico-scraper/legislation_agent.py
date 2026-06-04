@@ -73,7 +73,7 @@ SEARCH_QUERIES = [
 ]
 
 RESULTS_PER_QUERY = 20
-GEMINI_DELAY      = 4.0   # seconds between Gemini calls (free tier rate limit)
+GEMINI_DELAY      = 7.0   # seconds between Gemini calls (free tier: 10 req/min)
 RELEVANCE_MIN     = 6     # minimum score to flag a bill
 
 
@@ -254,7 +254,7 @@ def parse_bill_status(actions: list[dict]) -> dict:
 # ── Gemini API ────────────────────────────────────────────────────────────────
 
 def gemini_request(api_key: str, prompt: str, max_tokens: int = 400) -> str:
-    """Send a prompt to Gemini and return the text response."""
+    """Send a prompt to Gemini and return the text response. Retries on 429."""
     url  = f"{GEMINI_BASE}?key={api_key}"
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -263,12 +263,20 @@ def gemini_request(api_key: str, prompt: str, max_tokens: int = 400) -> str:
             "maxOutputTokens": max_tokens,
         },
     }
-    try:
-        resp = http_post(url, body)
-        return resp["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except Exception as e:
-        print(f"    Gemini error: {e}")
-        return ""
+    for attempt in range(3):
+        try:
+            resp = http_post(url, body)
+            return resp["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg and attempt < 2:
+                wait = 30 * (attempt + 1)
+                print(f"    Gemini 429 — waiting {wait}s before retry…")
+                time.sleep(wait)
+            else:
+                print(f"    Gemini error: {e}")
+                return ""
+    return ""
 
 
 def gemini_relevance_filter(api_key: str, bill_number: str, title: str, abstract: str) -> dict:
