@@ -24,13 +24,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run scraper + legislation agent
+     - name: Run scraper + legislation agent
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           OPENSTATES_API_KEY: ${{ secrets.OPENSTATES_API_KEY }}
           GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
-        run: python run.py
+        run: |
+          echo "Key length: ${#OPENSTATES_API_KEY}"
+          python run.py
 
       - name: Commit updated data to scraper repo
         run: |
