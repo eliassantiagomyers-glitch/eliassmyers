@@ -291,28 +291,38 @@ def is_obviously_irrelevant(title: str, abstract: str) -> bool:
     combined = (title + " " + (abstract or "")).lower()
     return any(pat in combined for pat in SKIP_PATTERNS)
 
-def gemini_relevance_filter(api_key: str, bill_number: str, title: str, abstract: str) -> dict:
+def gemini_batch_score(api_key: str, bills: list[dict]) -> dict[str, int]:
     """
-    Pass 1: Fast relevance filter. Returns score + relevant bool.
-    Cheap — runs on title + abstract only.
+    Pass 1: Score all bills in a single Gemini call.
+    Returns dict of bill_number -> score.
+    bills: list of {"number": str, "title": str, "abstract": str}
     """
-    prompt = f"""Score the relevance of this California bill to Chico city and Butte County (1-10).
+    if not bills:
+        return {}
 
-Bill: {bill_number}
-Title: {title}
-Abstract: {abstract or "None"}
+    bill_lines = ""
+    for b in bills:
+        abstract = (b["abstract"] or "None")[:200]
+        bill_lines += f'  {{"number": "{b["number"]}", "title": "{b["title"][:100]}", "abstract": "{abstract}"}},\n'
+
+    prompt = f"""Score each California bill's relevance to Chico city and Butte County on a scale of 1-10.
 
 Butte County context: Camp Fire recovery, Paradise rebuilding, Oroville Dam, Feather River water, agriculture (almonds, rice, olives), Chico State University, rural homelessness, wildfire risk, rural roads and infrastructure, air quality.
 
-Reply ONLY with valid JSON, no markdown:
-{{"score": <1-10>, "relevant": <true if score>=6>}}"""
+Bills to score:
+[
+{bill_lines}]
 
-    text = gemini_request(api_key, prompt, max_tokens=60)
+Reply ONLY with a valid JSON object mapping bill number to score, no markdown, no explanation:
+{{"AB 123": 7, "SB 456": 3, ...}}"""
+
+    text = gemini_request(api_key, prompt, max_tokens=500)
     try:
         text = text.replace("```json", "").replace("```", "").strip()
         return json.loads(text)
-    except Exception:
-        return {"score": 0, "relevant": False}
+    except Exception as e:
+        print(f"    Batch score parse error: {e} — raw: {text[:200]}")
+        return {}
 
 
 def gemini_full_analysis(
@@ -452,9 +462,10 @@ def run_agent():
     existing = {b["bill_id"]: b for b in state.get("state_legislation", [])}
     prev_ids = set(existing.keys())
 
-    # ── Step 4: Pass 1 — relevance filter ─────────────────────────────────
+    # ── Step 4: Pass 1 — relevance filter (batched) ──────────────────────
     print("\nPass 1: Relevance filter…")
     relevant_bills = []
+    to_score = []  # bills to send to Gemini in one batch
 
     for i, bill in enumerate(all_bills):
         bill_id     = bill.get("id", "")
@@ -475,13 +486,22 @@ def run_agent():
             print(f"    → Skipped (boilerplate)")
             continue
 
-        time.sleep(GEMINI_DELAY)
-        result = gemini_relevance_filter(gemini_key, bill_number, title, abstract)
-        score  = result.get("score", 0)
-        print(f"    → Score: {score}/10")
+        to_score.append({"number": bill_number, "title": title, "abstract": abstract, "_bill": bill})
 
-        if score >= RELEVANCE_MIN:
-            relevant_bills.append(("new", bill, {"score": score}))
+    # Single Gemini call for all remaining bills
+    if to_score:
+        print(f"\n  Sending {len(to_score)} bills to Gemini in one batch…")
+        scores = gemini_batch_score(gemini_key, to_score)
+        for item in to_score:
+            num   = item["number"]
+            score = scores.get(num, 0)
+            try:
+                score = int(score)
+            except (ValueError, TypeError):
+                score = 0
+            print(f"    {num}: {score}/10")
+            if score >= RELEVANCE_MIN:
+                relevant_bills.append(("new", item["_bill"], {"score": score}))
 
     print(f"\n  Relevant bills: {len(relevant_bills)}")
 
