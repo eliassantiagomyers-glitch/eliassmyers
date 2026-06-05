@@ -5356,7 +5356,7 @@
       "status": "active"
     }
   ],
-  "last_updated": "2026-06-04T02:56:50.004438+00:00",
+  "last_updated": "2026-06-05T05:18:31.484774+00:00",
   "last_items_hash": "3e22007b50de6a97",
   "changed": false,
   "prev_bill_ids": [
@@ -5510,6 +5510,6 @@
     "2021-08-03"
   ],
   "state_legislation": [],
-  "legislation_last_updated": "2026-06-04T03:34:26.354642+00:00",
+  "legislation_last_updated": "2026-06-05T05:18:46.294340+00:00",
   "legislation_flagged_count": 0
 }

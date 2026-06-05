@@ -291,38 +291,64 @@ def is_obviously_irrelevant(title: str, abstract: str) -> bool:
     combined = (title + " " + (abstract or "")).lower()
     return any(pat in combined for pat in SKIP_PATTERNS)
 
-def gemini_batch_score(api_key: str, bills: list[dict]) -> dict[str, int]:
+def keyword_score(bills: list[dict]) -> dict[str, int]:
     """
-    Pass 1: Score all bills in a single Gemini call.
-    Returns dict of bill_number -> score.
+    Pass 1: Keyword-based relevance filter replacing Gemini batch scoring.
+    Casts a wide net — false negatives are worse than false positives.
+    Any bill matching at least one keyword group passes with score >= RELEVANCE_MIN.
+    Returns dict of bill_number -> score (0 = no match, 7 = match).
     bills: list of {"number": str, "title": str, "abstract": str}
     """
-    if not bills:
-        return {}
+    KEYWORD_GROUPS = [
+        # Wildfire / fire
+        ["wildfire", "fire hazard", "fire prevention", "defensible space",
+         "cal fire", "fire safe", "fire severity", "prescribed burn",
+         "smoke", "evacuation", "camp fire", "paradise"],
+        # Water / Oroville
+        ["feather river", "oroville", "water rights", "water supply",
+         "drought", "dam", "flood", "levee", "irrigation", "groundwater"],
+        # Housing / homelessness
+        ["housing", "homeless", "affordable housing", "shelter",
+         "zoning", "density", "accessory dwelling", "adu", "encampment"],
+        # Agriculture
+        ["agriculture", "farming", "almond", "rice", "olive", "orchard",
+         "crop", "pesticide", "farmworker", "rural land"],
+        # Geography — direct references
+        ["butte county", "chico", "paradise", "oroville", "gridley",
+         "northern california", "rural county", "rural northern"],
+        # CSU / education
+        ["chico state", "csu", "california state university",
+         "higher education", "community college"],
+        # Infrastructure / transportation
+        ["highway", "rural road", "broadband", "infrastructure",
+         "transportation", "bridge", "public transit"],
+        # Environment / air quality
+        ["air quality", "pollution", "emissions", "climate",
+         "environmental", "ceqa", "conservation", "habitat"],
+        # Public safety / law enforcement
+        ["law enforcement", "sheriff", "public safety", "crime",
+         "jail", "corrections", "911", "dispatch"],
+        # Mental health / substance abuse
+        ["mental health", "substance abuse", "behavioral health",
+         "addiction", "opioid", "treatment", "crisis"],
+        # Emergency management
+        ["emergency", "disaster", "fema", "mutual aid", "caloes",
+         "recovery", "resilience"],
+        # Cannabis
+        ["cannabis", "marijuana", "dispensary", "cultivation"],
+        # Geologic / seismic
+        ["geologic", "earthquake", "landslide", "geological survey"],
+    ]
 
-    bill_lines = ""
+    scores = {}
     for b in bills:
-        abstract = (b["abstract"] or "None")[:200]
-        bill_lines += f'  {{"number": "{b["number"]}", "title": "{b["title"][:100]}", "abstract": "{abstract}"}},\n'
-
-    prompt = f"""Score each California bill's relevance to Chico city and Butte County on a scale of 1-10.
-
-Butte County context: Camp Fire recovery, Paradise rebuilding, Oroville Dam, Feather River water, agriculture (almonds, rice, olives), Chico State University, rural homelessness, wildfire risk, rural roads and infrastructure, air quality.
-
-Bills to score:
-[
-{bill_lines}]
-
-Reply ONLY with a valid JSON object mapping bill number to score, no markdown, no explanation:
-{{"AB 123": 7, "SB 456": 3, ...}}"""
-
-    text = gemini_request(api_key, prompt, max_tokens=500)
-    try:
-        text = text.replace("```json", "").replace("```", "").strip()
-        return json.loads(text)
-    except Exception as e:
-        print(f"    Batch score parse error: {e} — raw: {text[:200]}")
-        return {}
+        combined = (b["title"] + " " + (b["abstract"] or "")).lower()
+        matched = any(
+            any(kw in combined for kw in group)
+            for group in KEYWORD_GROUPS
+        )
+        scores[b["number"]] = 7 if matched else 0
+    return scores
 
 
 def gemini_full_analysis(
@@ -488,10 +514,10 @@ def run_agent():
 
         to_score.append({"number": bill_number, "title": title, "abstract": abstract, "_bill": bill})
 
-    # Single Gemini call for all remaining bills
+    # Keyword filter pass — no API call, zero false negatives
     if to_score:
-        print(f"\n  Sending {len(to_score)} bills to Gemini in one batch…")
-        scores = gemini_batch_score(gemini_key, to_score)
+        print(f"\n  Keyword-filtering {len(to_score)} bills…")
+        scores = keyword_score(to_score)
         for item in to_score:
             num   = item["number"]
             score = scores.get(num, 0)
