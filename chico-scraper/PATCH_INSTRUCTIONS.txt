@@ -1,0 +1,101 @@
+# PATCH INSTRUCTIONS FOR build_dashboard.py
+# Apply these changes in order. Each section shows exactly what to find and replace.
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 1 — Add import at top of build_dashboard.py (after existing imports)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# FIND (existing imports block):
+import json
+from datetime import datetime
+from pathlib import Path
+
+# ADD AFTER:
+import sys
+import os
+sys.path.insert(0, str(Path(__file__).parent))
+from legislation_panel_renderer import render_legislation_panel, LEGISLATION_CSS
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 2 — Replace render_legislation_cards() call in build()
+# ══════════════════════════════════════════════════════════════════════════════
+
+# FIND in build():
+leg_html = render_legislation_cards(leg_bills)
+
+# REPLACE WITH:
+leg_html = render_legislation_panel(leg_bills)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 3 — Inject CSS into the <style> block in build()
+# ══════════════════════════════════════════════════════════════════════════════
+
+# FIND (near the end of the CSS block, just before </style>):
+</style>
+
+# REPLACE WITH:
+{LEGISLATION_CSS}
+</style>
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 4 — Fix the legislation panel's main-body to be full-height flex
+# ══════════════════════════════════════════════════════════════════════════════
+
+# FIND in the HTML template (the legislation panel div):
+<div id="panel-legislation" class="panel">
+  <div class="main-header">
+    <div>
+      <div class="main-title">California Legislation</div>
+      <div class="main-subtitle mono">Open States · Gemini relevance filter · {n_leg} flagged for Butte County</div>
+    </div>
+  </div>
+  <div class="main-body">{leg_html}</div>
+</div>
+
+# REPLACE WITH:
+<div id="panel-legislation" class="panel" style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
+  <div class="main-header" style="flex-shrink:0">
+    <div>
+      <div class="main-title">California Legislation</div>
+      <div class="main-subtitle mono">Open States · Gemini relevance filter · {n_leg} flagged for Butte County</div>
+    </div>
+  </div>
+  <div class="main-body" style="flex:1;padding:0;overflow:hidden;display:flex;flex-direction:column;">{leg_html}</div>
+</div>
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 5 — Place new Python files alongside build_dashboard.py
+# ══════════════════════════════════════════════════════════════════════════════
+# Copy both files to the repo root (same directory as build_dashboard.py):
+#   legislation_priority.py
+#   legislation_panel_renderer.py
+#
+# These files are standalone — no new pip dependencies required.
+# legislation_priority.py has no imports beyond stdlib.
+# legislation_panel_renderer.py imports only from legislation_priority.py + stdlib.
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 6 — legislation_agent.py: enrich bills with detected topics + score
+# ══════════════════════════════════════════════════════════════════════════════
+# Add this to the TOP of run_agent(), after loading state (Step 3):
+#
+#   from legislation_priority import priority_score, detect_topics, is_rep_bill, is_butte_direct
+#
+# Then in Step 6 (Sort and save), REPLACE the existing sort with:
+#
+#   from legislation_priority import priority_score, detect_topics, is_rep_bill, is_butte_direct
+#   for bill in flagged:
+#       bill["_priority_score"] = priority_score(bill)
+#       bill["_topics_detected"] = detect_topics(bill)
+#       bill["_is_rep_bill"] = is_rep_bill(bill)
+#       bill["_is_butte_direct"] = is_butte_direct(bill)
+#
+#   flagged.sort(key=lambda x: x.get("_priority_score", 0), reverse=True)
+#
+# This pre-computes scores into state.json so the dashboard renderer
+# doesn't need to re-run them (and they're visible in the raw data too).
