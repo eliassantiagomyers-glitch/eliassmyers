@@ -1,40 +1,78 @@
 # Chico Policy Tracker
 
-Automated tracker for city council activity, legislation, and policy decisions affecting Chico and Butte County. Scrapes Chico City Council meeting data twice daily, runs California state bills through an AI relevance filter, and publishes everything to a live dashboard.
+Automated intelligence tool for journalists covering Chico, CA and Butte County. Scrapes city council meetings, tracks California legislation, and surfaces what matters — scored, grouped, and prioritized by local relevance.
 
-**Live dashboard:** [eliassmyers.wiki/chico-scraper](https://eliassmyers.wiki/chico-scraper)
-
----
-
-## What it does
-
-| Step | File | Description |
-|------|------|-------------|
-| 1 | `scraper.py` | Fetches Chico City Council agenda + minutes RSS feeds from Granicus, parses meeting items, detects recurring bills across meetings, writes `data/state.json` |
-| 2 | `build_dashboard.py` | Reads `state.json`, generates `index.html` dashboard |
-| 3 | `legiscan_agent.py` | Fetches active California bills from LegiScan, runs each through Gemini to determine relevance to Chico/Butte County, adds flagged bills to `state.json` |
-| 4 | `build_dashboard.py` | Rebuilds dashboard a second time with legislation data included |
-| 5 | `notify.py` | Diffs against prior run, sends Telegram alerts for new meetings and newly flagged bills |
-| — | `run.py` | Orchestrates all steps in order |
-| — | `.github/workflows/scrape.yml` | GitHub Actions cron (7:00 AM + 7:00 PM UTC daily) |
+**Live dashboard:** [eliassmyers.wiki/chico-scraper](https://eliassmyers.wiki/chico-scraper)  
+**Telegram alerts:** [@Chicoscraperbot](https://t.me/Chicoscraperbot)
 
 ---
 
-## Dashboard tabs
+## What it tracks
 
-| Tab | Status | Description |
-|-----|--------|-------------|
-| Council | ✅ Live | Latest Chico City Council meeting agendas and minutes |
-| Bill Tracker | ✅ Live | Agenda items that recur across multiple meetings, with timelines |
-| State Legislation | ✅ Live | California bills flagged as relevant to Chico/Butte County by Gemini |
-| Federal | 🔜 Planned | Federal legislation affecting Butte County |
-| Agency Policy | 🔜 Planned | State and federal agency regulatory changes |
+| Source | Data | Status |
+|---|---|---|
+| Chico City Council | Agendas, minutes, recurring agenda items | ✅ Live |
+| California Legislature | Bills flagged for Butte County relevance, rep votes | ✅ Live |
+| U.S. Congress | Federal legislation affecting Butte County | 🔜 Planned |
+| Agency Policy | CalOES, EPA, CDFA regulatory changes | 🔜 Planned |
+| Police Scanner | Local incident monitoring | 🔜 Planned |
+
+Runs twice daily via GitHub Actions (7:00 AM + 7:00 PM UTC). Pushes to [eliassmyers.wiki/chico-scraper](https://eliassmyers.wiki/chico-scraper) on every run.
+
+---
+
+## How the pipeline works
+
+```
+scraper.py          →  Granicus RSS → city council agendas + minutes → data/state.json
+legislation_agent.py → Open States API → CA bills → keyword filter → Gemini analysis → state.json
+build_dashboard.py  →  state.json → index.html
+notify.py           →  diffs against prior run → Telegram alerts for new items only
+run.py              →  orchestrates all of the above
+```
+
+### City council
+
+Fetches Chico City Council agenda and minutes RSS feeds from Granicus twice daily. Agenda items are normalized and compared across meetings using Jaccard token similarity — items with ≥50% token overlap across two or more meetings are clustered as recurring items and shown in the Bill Tracker tab with a full timeline.
+
+### State legislation
+
+Searches California's active bill list via the [Open States API](https://open.pluralpolicy.com) across 12 topic queries covering Butte County priorities. Bills pass through two filters:
+
+**Pass 1 — Keyword filter:** A local keyword taxonomy covering 13 topic domains (wildfire, water, agriculture, housing, emergency management, CSU Chico, broadband, environment, public safety, mental health, cannabis, geologic hazards). Any match passes. Zero false negatives is the goal — over-inclusion is preferable to missing a relevant bill.
+
+**Pass 2 — Gemini analysis:** Newly flagged bills are sent to Gemini 2.5 Flash for a structured local analysis: what the bill does, the Butte County angle, and what each rep's vote means for their constituents. Previously flagged bills skip this step — only status and vote records are updated on subsequent runs.
+
+**Priority scoring:** Each bill receives a 0–100 priority score based on legislative momentum (floor/committee/introduced), Butte County geographic specificity (naming Chico, Oroville, Paradise, Butte County explicitly), rep sponsorship (Gallagher, Dahle), topic tier, and recency of action. Bills are grouped editorially — not filtered arbitrarily — into:
+
+1. **Rep Bills** — Gallagher (AD-3) and Dahle (SD-1) sponsored bills, always surfaced at top
+2. **Butte County Direct** — Bills explicitly naming local jurisdictions
+3. **Tier 1 Topics** — Wildfire, Water/Oroville, Agriculture, Emergency Management, CSU Chico
+4. **Tier 2 Topics** — Housing, Environment, Broadband
+5. **Other** — Passed keyword filter but no stronger local signal
+
+Failed and vetoed bills are hidden unless rep-sponsored.
+
+### Notifications
+
+Telegram alerts fire only for newly flagged bills and new council meetings. A bill scraped on a prior run will never re-trigger a notification, regardless of how many times the scraper runs.
+
+---
+
+## Representatives tracked
+
+| Rep | Role | Party |
+|---|---|---|
+| James Gallagher | Assemblymember, AD-3 | Republican |
+| Megan Dahle | Senator, SD-1 | Republican |
+
+Vote records are pulled from Open States on every run and updated in place.
 
 ---
 
 ## Setup
 
-### 1. Fork or clone this repo
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/eliassantiagomyers-glitch/Chico-scraper.git
@@ -43,29 +81,27 @@ cd Chico-scraper
 
 ### 2. Add GitHub Secrets
 
-Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+Settings → Secrets and variables → Actions → New repository secret:
 
-| Secret | Where to get it | Required |
-|--------|-----------------|----------|
-| `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) on Telegram | Yes |
-| `TELEGRAM_CHAT_ID` | [@userinfobot](https://t.me/userinfobot) on Telegram | Yes |
+| Secret | Source | Required |
+|---|---|---|
+| `OPENSTATES_API_KEY` | [open.pluralpolicy.com](https://open.pluralpolicy.com) | Yes |
 | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/) — free | Yes |
-| `LEGISCAN_API_KEY` | [legiscan.com](https://legiscan.com/legiscan) — free, requires approval | Yes |
+| `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) | Yes |
+| `TELEGRAM_CHAT_ID` | [@userinfobot](https://t.me/userinfobot) | Yes |
 | `ELIASSMYERS_DEPLOY_TOKEN` | GitHub → Settings → Developer Settings → Personal Access Tokens (classic) → `repo` scope | Yes |
 
-### 3. Enable GitHub Pages on the eliassmyers repo
+### 3. Enable GitHub Pages on the site repo
 
-In the `eliassmyers` repo: **Settings → Pages → Source → Deploy from a branch → main → / (root)**
+In `eliassantiagomyers-glitch/eliassmyers`: Settings → Pages → Source → Deploy from a branch → main → / (root)
 
-### 4. Create the dashboard folder in eliassmyers
+### 4. Create the dashboard placeholder
 
-In the `eliassmyers` repo, create a file at `chico-scraper/.gitkeep` (blank content). This placeholder gets replaced by `index.html` on the first workflow run.
+In the `eliassmyers` repo, create `chico-scraper/.gitkeep` (blank file). The workflow replaces it with `index.html` on first run.
 
-### 5. Trigger the first run
+### 5. Trigger
 
-**Actions → Scrape & Deploy → Run workflow**
-
-The workflow will scrape, build, run the legislation agent, rebuild, and deploy to `eliassmyers.wiki/chico-scraper`.
+Actions → Scrape & Deploy → Run workflow
 
 ---
 
@@ -74,50 +110,44 @@ The workflow will scrape, build, run the legislation agent, rebuild, and deploy 
 ```bash
 pip install -r requirements.txt
 
-# Set environment variables
+export OPENSTATES_API_KEY=your_key
+export GEMINI_API_KEY=your_key
 export TELEGRAM_BOT_TOKEN=your_token
 export TELEGRAM_CHAT_ID=your_chat_id
-export GEMINI_API_KEY=your_gemini_key
-export LEGISCAN_API_KEY=your_legiscan_key
 
 python run.py
-
-# Open index.html in your browser
+# open index.html
 ```
 
-The legislation agent skips itself gracefully if `LEGISCAN_API_KEY` or `GEMINI_API_KEY` are not set, so the council scraper will still run fine without them.
+Each agent fails gracefully if its API key is missing — the council scraper runs independently of the legislation agent.
 
 ---
 
-## How bill tracking works
+## File structure
 
-### City council recurring items
-Agenda item titles are normalized (stripped of stopwords, punctuation, case) and compared across meetings using Jaccard token similarity. Items with ≥50% token overlap appearing in two or more different meetings are clustered as a tracked bill and shown in the Bill Tracker tab with a timeline.
-
-### State legislation relevance
-The LegiScan agent searches California's active bill list across ten topic areas relevant to Butte County (wildfire, water, housing, agriculture, transportation, environment, public safety, education, cannabis, mental health). Each bill's title and description is sent to Gemini with a prompt asking it to score relevance to Chico/Butte County from 1–10, with specific context about the region (Camp Fire recovery, Oroville Dam, Chico State, Feather River, etc.). Bills scoring 6 or higher are flagged and added to the dashboard.
-
-Previously flagged bills are preserved across runs and not re-analyzed, saving API calls. Only newly flagged bills trigger Telegram notifications.
-
----
-
-## Data sources
-
-| Source | Data | URL |
-|--------|------|-----|
-| Granicus (City of Chico) | City Council agendas + minutes | [chico-ca.granicus.com](https://chico-ca.granicus.com/ViewPublisher.php?view_id=2) |
-| LegiScan | California state legislation | [legiscan.com](https://legiscan.com/CA) |
-| Google Gemini | AI relevance analysis | [aistudio.google.com](https://aistudio.google.com/) |
+```
+scraper.py                   City council Granicus scraper
+legislation_agent.py         Open States + Gemini legislation pipeline
+legislation_priority.py      Priority scoring and grouping logic
+legislation_panel_renderer.py  Dashboard legislation panel renderer
+build_dashboard.py           Reads state.json, generates index.html
+notify.py                    Telegram notification diffing
+run.py                       Pipeline orchestrator
+data/state.json              Persistent state (meetings, bills, legislation)
+.github/workflows/scrape.yml GitHub Actions cron
+```
 
 ---
 
 ## Deployment
 
-The workflow runs on GitHub Actions twice daily. On each run:
+On each run, GitHub Actions:
 
-1. New `data/state.json` and `index.html` are committed to this repo
-2. `index.html` is pushed to `eliassantiagomyers-glitch/eliassmyers` under `chico-scraper/`
+1. Commits updated `data/state.json` and `index.html` to this repo
+2. Pushes `index.html` to `eliassantiagomyers-glitch/eliassmyers` under `chico-scraper/` using a classic PAT (`ELIASSMYERS_DEPLOY_TOKEN`)
 3. GitHub Pages serves it at `eliassmyers.wiki/chico-scraper`
+
+The two-repo setup exists because the site repo (`eliassmyers`) hosts a personal site alongside the tracker. Don't change the PAT scope or the deploy target path without updating the workflow.
 
 ---
 
@@ -125,7 +155,8 @@ The workflow runs on GitHub Actions twice daily. On each run:
 
 - [ ] Federal legislation tracking via Congress.gov API
 - [ ] Agency policy changes (CalOES, EPA, CDFA, FEMA)
-- [ ] Full bill text analysis (currently uses title + summary only)
-- [ ] Vote record parsing from council minutes
-- [ ] Search across all agenda items
-- [ ] Email digest option alongside Telegram
+- [ ] Full bill text analysis (currently title + summary only)
+- [ ] Vote record parsing from council minutes PDFs
+- [ ] Police scanner integration
+- [ ] Email digest alongside Telegram
+- [ ] Backfill Gemini analysis for bills with missing explanations
