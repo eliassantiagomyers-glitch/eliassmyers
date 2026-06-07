@@ -562,6 +562,358 @@ a:hover { text-decoration: underline; }
     /* Cards full width */
     .card { margin-bottom: 8px; }
 }
+
+/* ── Legislation Panel ─────────────────────────────────────────────────── */
+.leg-panel-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Filter bar */
+.leg-filter-bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.leg-filter-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.leg-search {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+.leg-search:focus { outline: none; border-color: var(--green); }
+.leg-select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.leg-select:focus { outline: none; }
+.leg-toggle-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.leg-topic-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-chip:hover { border-color: var(--border2); color: var(--text2); }
+.filter-chip.active {
+  background: var(--green2);
+  border-color: rgba(0,200,150,0.4);
+  color: var(--green);
+}
+
+/* Two-pane body */
+.leg-body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.leg-list {
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+}
+.leg-detail {
+  overflow-y: auto;
+  background: var(--bg2);
+  padding: 20px;
+}
+
+/* Group headers */
+.leg-group { border-bottom: 1px solid var(--border); }
+.leg-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-left: 3px solid var(--gc, var(--text3));
+}
+.leg-group-header:hover { background: var(--bg3); }
+.leg-group-toggle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--gc, var(--text3));
+  width: 12px;
+  flex-shrink: 0;
+}
+.leg-group-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gc, var(--text2));
+  flex: 1;
+  letter-spacing: 0.04em;
+}
+.leg-group-count {
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg4);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+/* Bill rows (left list) */
+.bill-row {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  background: var(--bg);
+}
+.bill-row:hover { background: var(--bg3); }
+.bill-row.active {
+  background: var(--bg3);
+  border-left: 3px solid var(--green);
+  padding-left: 9px;
+}
+.bill-row-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.bill-num-sm {
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: 500;
+}
+.bill-row-title {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+.bill-row.active .bill-row-title { color: var(--text); }
+.bill-row-topics {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.topic-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  background: var(--bg4);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Score bar */
+.score-bar-wrap {
+  height: 2px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 4px 0 2px;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+/* Rep / direct badges */
+.tag-rep {
+  background: var(--amber2);
+  color: var(--amber);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.tag-direct {
+  background: var(--green2);
+  color: var(--green);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Detail pane */
+.detail-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-placeholder-inner { text-align: center; }
+.detail-pane { animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.detail-bill-header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-bill-num-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.detail-bnum {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue);
+}
+.detail-ext-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  margin-left: auto;
+}
+.detail-ext-link:hover { color: var(--green); text-decoration: none; }
+.detail-bill-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+.detail-score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.detail-score-bar { flex: 1; height: 4px; margin: 0; }
+.detail-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.detail-section {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: block;
+}
+.detail-expl {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border-radius: 4px;
+  border-left: 2px solid var(--blue);
+}
+.detail-angle {
+  font-size: 12px;
+  color: var(--green);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-meta-row {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+.detail-meta-row .detail-label { min-width: 80px; }
+.rep-block-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rep-row-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+.detail-timeline {
+  margin-top: 4px;
+}
+.detail-timeline summary::-webkit-details-marker { display: none; }
+
+/* Adjust main panel to not have internal padding when showing leg panel */
+#panel-legislation .main-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Legislation panel fill fix */
+#panel-legislation {
+    display: none;
+    flex-direction: column;
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;
+}
+#panel-legislation.active {
+    display: flex;
+}
 </style>
 </head>
 <body>
@@ -572,7 +924,7 @@ a:hover { text-decoration: underline; }
     <div class="header-spacer"></div>
     <div class="header-meta">
         <span class="live-dot"></span>
-        <span>Updated Jun 7, 2026 · 16:02 UTC</span>
+        <span>Updated Jun 7, 2026 · 16:11 UTC</span>
         <span style="color:var(--border2)">|</span>
         <span>139 meetings · 0 tracked · 16 bills</span>
     </div>
@@ -2773,438 +3125,992 @@ a:hover { text-decoration: underline; }
                     <div class="main-subtitle mono">Open States · Gemini relevance filter · 16 flagged for Butte County</div>
                 </div>
             </div>
-            <div class="main-body"><div class="card" data-id="leg-ocd-bill/9c4a4649-fe4f-420d-8347-7d5bd4a3e649">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 815</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 815: Planning and zoning: very high fire hazard areas."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 815/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 815/" target="_blank">Planning and zoning: very high fire hazard areas.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/9d4eb704-0f0d-4cf9-8782-71e1befba186">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 629</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 629: Wildfires: fire hazard severity zones: post-wildfire safety areas."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 629/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 629/" target="_blank">Wildfires: fire hazard severity zones: post-wildfire safety areas.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/7a4449fe-5de1-4821-8068-f4835984b42d">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 693</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 693: Broadband: state oversight."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 693/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 693/" target="_blank">Broadband: state oversight.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/fc958b42-2019-4c42-8500-b4325308d7ed">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 1019</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 1019: Enhancing Law Enforcement Activities Subaccount: identification of unidentified human remains."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 1019/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 1019/" target="_blank">Enhancing Law Enforcement Activities Subaccount: identification of unidentified human remains.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/8de82862-6547-49ff-97d8-3f8afc66416d">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 130</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 130: Housing."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 130/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 130/" target="_blank">Housing.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/cf4e99b8-54a9-4469-8e74-032afcc42807">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 786</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 786: California Pollution Control Financing Authority: name change."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 786/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 786/" target="_blank">California Pollution Control Financing Authority: name change.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/cff7abbd-56d6-4ac0-87af-0accebb14159">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 831</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 831: Geologic hazards: California Geological Survey."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 831/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 831/" target="_blank">Geologic hazards: California Geological Survey.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/a4aab95d-dd0c-4cbd-a800-698c26c608c3">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 1520</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 1520: Public resources: conservation."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 1520/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 1520/" target="_blank">Public resources: conservation.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/6839febe-208a-496a-98d0-63e5df01e201">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 231</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 231: California Environmental Quality Act: the Office of Land Use and Climate Innovation: technical advisory."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 231/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 231/" target="_blank">California Environmental Quality Act: the Office of Land Use and Climate Innovation: technical advisory.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/b7d7006b-cbce-4f7d-9ced-da6a7e19dc0b">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 1207</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 1207: Climate change: market-based compliance mechanism: extension."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 1207/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 1207/" target="_blank">Climate change: market-based compliance mechanism: extension.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/d8261f1e-bd17-4629-9411-baf6e121e1b9">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 130</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 130: Housing."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 130/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 130/" target="_blank">Housing.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/fb70803c-2a12-426d-80a0-a9ec5b97d6af">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 223</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 223: The Wildfire Smoke and Health Outcomes Data Act."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 223/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 223/" target="_blank">The Wildfire Smoke and Health Outcomes Data Act.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/e1e28dc1-829e-49dd-b3b9-7d1395195963">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AB 1083</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AB 1083: California Environmental Quality Act: exemptions: housing development projects: natural and protected lands: record of proceedings."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AB 1083/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AB 1083/" target="_blank">California Environmental Quality Act: exemptions: housing development projects: natural and protected lands: record of proceedings.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/4f55c79b-8445-4d68-ba37-2da51a004b88">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SJR 6</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SJR 6: Federal funding for essential state infrastructure, technology, and economic development."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SJR 6/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SJR 6/" target="_blank">Federal funding for essential state infrastructure, technology, and economic development.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/4f85f996-f2b4-4bba-9e79-dafe03784b49">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">SB 582</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="SB 582: Health and care facilities: licensing during emergencies or disasters."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/SB 582/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/SB 582/" target="_blank">Health and care facilities: licensing during emergencies or disasters.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div>
-<div class="card" data-id="leg-ocd-bill/bce85920-4fef-4908-b425-0933a603c75f">
-            <div class="card-top">
-                <div class="card-meta">
-                    <span class="mono bill-num">AJR 11</span>
-                    <span class="tag tag-blue">Introduced</span>
-                    <span class="tag tag-blue">7/10</span>
-                    
-                </div>
-                <div class="card-actions">
-                    <button class="pin-btn" onclick="pinItem(this)"
-                        data-title="AJR 11: Building Resilient Infrastructure and Communities program: federal funding cuts."
-                        data-date=""
-                        data-link="https://openstates.org/ca/bills/20252026/AJR 11/"
-                        title="Pin to board">⊕</button>
-                </div>
-            </div>
-            <div class="card-title"><a href="https://openstates.org/ca/bills/20252026/AJR 11/" target="_blank">Building Resilient Infrastructure and Communities program: federal funding cuts.</a></div>
-            <div class="card-expl">Analysis unavailable.</div>
-            
-            <div class="card-status-line mono dim">
-                
-                
-            </div>
-            
-            <div class="rep-block"><div class="mono dim" style="font-size:11px">No recorded votes yet for Gallagher or Dahle.</div></div>
-            
-        </div></div>
+            <div class="main-body">
+<div class="leg-panel-wrap">
+
+  <!-- Filter bar -->
+  <div class="leg-filter-bar">
+    <div class="leg-filter-row">
+      <input class="leg-search" type="text" placeholder="Search bills…" oninput="filterSearch(this.value)">
+      <select class="leg-select" onchange="filterStatus(this.value)">
+        <option value="all">All Statuses</option>
+        <option value="floor">On Floor</option>
+        <option value="committee">In Committee</option>
+        <option value="introduced">Introduced</option>
+        <option value="passed">Passed</option>
+      </select>
+      <label class="leg-toggle-label">
+        <input type="checkbox" id="rep-only-toggle" onchange="filterRepOnly(this.checked)">
+        Rep bills only
+      </label>
+    </div>
+    <div class="leg-topic-chips"><button class="filter-chip active" onclick="filterTopic(this,'all')">All Topics</button><button class="filter-chip" onclick="filterTopic(this,'Wildfire / Fire Safety')" data-topic="Wildfire / Fire Safety">Wildfire</button><button class="filter-chip" onclick="filterTopic(this,'Water / Oroville Dam')" data-topic="Water / Oroville Dam">Water</button><button class="filter-chip" onclick="filterTopic(this,'Agriculture / Farming')" data-topic="Agriculture / Farming">Agriculture</button><button class="filter-chip" onclick="filterTopic(this,'Emergency Management / Disaster')" data-topic="Emergency Management / Disaster">Emergency Management</button><button class="filter-chip" onclick="filterTopic(this,'Education / CSU Chico')" data-topic="Education / CSU Chico">Education</button><button class="filter-chip" onclick="filterTopic(this,'Housing / Homelessness')" data-topic="Housing / Homelessness">Housing</button><button class="filter-chip" onclick="filterTopic(this,'Environment / Air Quality')" data-topic="Environment / Air Quality">Environment</button><button class="filter-chip" onclick="filterTopic(this,'Infrastructure / Broadband')" data-topic="Infrastructure / Broadband">Infrastructure</button></div>
+  </div>
+
+  <!-- Two-pane layout -->
+  <div class="leg-body">
+
+    <!-- Left: grouped bill list -->
+    <div class="leg-list" id="leg-list">
+      <div class="leg-group" id="grp-tier1--Wildfire---Fire-Safety">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier1--Wildfire---Fire-Safety')" style="--gc:var(--blue);--gbg:var(--blue2)">
+    <span class="leg-group-toggle" id="grp-tier1--Wildfire---Fire-Safety-arrow">▸</span>
+    <span class="leg-group-label">Wildfire / Fire Safety</span>
+    <span class="leg-group-count mono">3</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier1--Wildfire---Fire-Safety-body" style="display:none">
+    <div class="bill-row" id="bill-row-0" onclick="selectBill(0)" data-idx="0"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Wildfire / Fire Safety,Housing / Homelessness"
+     data-title="planning and zoning: very high fire hazard areas."
+     data-number="sb 815">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 815</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Planning and zoning: very high fire hazard areas.</div>
+  <div class="score-bar-wrap" title="Priority score: 15/100"><div class="score-bar-fill" style="width:15%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Wildfire</span><span class="topic-chip">Housing</span></div>
+</div><div class="bill-row" id="bill-row-1" onclick="selectBill(1)" data-idx="1"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Wildfire / Fire Safety"
+     data-title="wildfires: fire hazard severity zones: post-wildfire safety areas."
+     data-number="sb 629">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 629</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Wildfires: fire hazard severity zones: post-wildfire safety areas.</div>
+  <div class="score-bar-wrap" title="Priority score: 15/100"><div class="score-bar-fill" style="width:15%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Wildfire</span></div>
+</div><div class="bill-row" id="bill-row-2" onclick="selectBill(2)" data-idx="2"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Wildfire / Fire Safety"
+     data-title="the wildfire smoke and health outcomes data act."
+     data-number="sb 223">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 223</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">The Wildfire Smoke and Health Outcomes Data Act.</div>
+  <div class="score-bar-wrap" title="Priority score: 15/100"><div class="score-bar-fill" style="width:15%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Wildfire</span></div>
+</div>
+  </div>
+</div><div class="leg-group" id="grp-tier1--Emergency-Management---Disaster">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier1--Emergency-Management---Disaster')" style="--gc:var(--blue);--gbg:var(--blue2)">
+    <span class="leg-group-toggle" id="grp-tier1--Emergency-Management---Disaster-arrow">▸</span>
+    <span class="leg-group-label">Emergency Management / Disaster</span>
+    <span class="leg-group-count mono">1</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier1--Emergency-Management---Disaster-body" style="display:none">
+    <div class="bill-row" id="bill-row-3" onclick="selectBill(3)" data-idx="3"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Emergency Management / Disaster"
+     data-title="health and care facilities: licensing during emergencies or disasters."
+     data-number="sb 582">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 582</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Health and care facilities: licensing during emergencies or disasters.</div>
+  <div class="score-bar-wrap" title="Priority score: 15/100"><div class="score-bar-fill" style="width:15%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Emergency Mana</span></div>
+</div>
+  </div>
+</div><div class="leg-group" id="grp-tier2--Housing---Homelessness">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier2--Housing---Homelessness')" style="--gc:var(--text2);--gbg:var(--bg4)">
+    <span class="leg-group-toggle" id="grp-tier2--Housing---Homelessness-arrow">▸</span>
+    <span class="leg-group-label">Housing / Homelessness</span>
+    <span class="leg-group-count mono">3</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier2--Housing---Homelessness-body" style="display:none">
+    <div class="bill-row" id="bill-row-4" onclick="selectBill(4)" data-idx="4"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Housing / Homelessness"
+     data-title="housing."
+     data-number="ab 130">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 130</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Housing.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Housing</span></div>
+</div><div class="bill-row" id="bill-row-5" onclick="selectBill(5)" data-idx="5"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Housing / Homelessness"
+     data-title="housing."
+     data-number="sb 130">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 130</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Housing.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Housing</span></div>
+</div><div class="bill-row" id="bill-row-6" onclick="selectBill(6)" data-idx="6"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Housing / Homelessness,Environment / Air Quality"
+     data-title="california environmental quality act: exemptions: housing development projects: natural and protected lands: record of proceedings."
+     data-number="ab 1083">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 1083</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">California Environmental Quality Act: exemptions: housing development projects: natural an…</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Housing</span><span class="topic-chip">Environment</span></div>
+</div>
+  </div>
+</div><div class="leg-group" id="grp-tier2--Environment---Air-Quality">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier2--Environment---Air-Quality')" style="--gc:var(--text2);--gbg:var(--bg4)">
+    <span class="leg-group-toggle" id="grp-tier2--Environment---Air-Quality-arrow">▸</span>
+    <span class="leg-group-label">Environment / Air Quality</span>
+    <span class="leg-group-count mono">4</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier2--Environment---Air-Quality-body" style="display:none">
+    <div class="bill-row" id="bill-row-7" onclick="selectBill(7)" data-idx="7"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Environment / Air Quality"
+     data-title="california pollution control financing authority: name change."
+     data-number="ab 786">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 786</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">California Pollution Control Financing Authority: name change.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Environment</span></div>
+</div><div class="bill-row" id="bill-row-8" onclick="selectBill(8)" data-idx="8"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Environment / Air Quality"
+     data-title="public resources: conservation."
+     data-number="ab 1520">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 1520</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Public resources: conservation.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Environment</span></div>
+</div><div class="bill-row" id="bill-row-9" onclick="selectBill(9)" data-idx="9"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Environment / Air Quality"
+     data-title="california environmental quality act: the office of land use and climate innovation: technical advisory."
+     data-number="sb 231">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 231</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">California Environmental Quality Act: the Office of Land Use and Climate Innovation: techn…</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Environment</span></div>
+</div><div class="bill-row" id="bill-row-10" onclick="selectBill(10)" data-idx="10"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Environment / Air Quality"
+     data-title="climate change: market-based compliance mechanism: extension."
+     data-number="ab 1207">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 1207</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Climate change: market-based compliance mechanism: extension.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Environment</span></div>
+</div>
+  </div>
+</div><div class="leg-group" id="grp-tier2--Infrastructure---Broadband">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier2--Infrastructure---Broadband')" style="--gc:var(--text2);--gbg:var(--bg4)">
+    <span class="leg-group-toggle" id="grp-tier2--Infrastructure---Broadband-arrow">▸</span>
+    <span class="leg-group-label">Infrastructure / Broadband</span>
+    <span class="leg-group-count mono">3</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier2--Infrastructure---Broadband-body" style="display:none">
+    <div class="bill-row" id="bill-row-11" onclick="selectBill(11)" data-idx="11"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Infrastructure / Broadband"
+     data-title="broadband: state oversight."
+     data-number="ab 693">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 693</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Broadband: state oversight.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Infrastructure</span></div>
+</div><div class="bill-row" id="bill-row-12" onclick="selectBill(12)" data-idx="12"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Infrastructure / Broadband"
+     data-title="federal funding for essential state infrastructure, technology, and economic development."
+     data-number="sjr 6">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SJR 6</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Federal funding for essential state infrastructure, technology, and economic development.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Infrastructure</span></div>
+</div><div class="bill-row" id="bill-row-13" onclick="selectBill(13)" data-idx="13"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Infrastructure / Broadband"
+     data-title="building resilient infrastructure and communities program: federal funding cuts."
+     data-number="ajr 11">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AJR 11</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Building Resilient Infrastructure and Communities program: federal funding cuts.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Infrastructure</span></div>
+</div>
+  </div>
+</div><div class="leg-group" id="grp-other">
+  <div class="leg-group-header" onclick="toggleGroup('grp-other')" style="--gc:var(--text3);--gbg:var(--bg3)">
+    <span class="leg-group-toggle" id="grp-other-arrow">▸</span>
+    <span class="leg-group-label">Other Tracked Bills</span>
+    <span class="leg-group-count mono">2</span>
+  </div>
+  <div class="leg-group-body" id="grp-other-body" style="display:none">
+    <div class="bill-row" id="bill-row-14" onclick="selectBill(14)" data-idx="14"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Other"
+     data-title="enhancing law enforcement activities subaccount: identification of unidentified human remains."
+     data-number="ab 1019">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">AB 1019</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Enhancing Law Enforcement Activities Subaccount: identification of unidentified human rema…</div>
+  <div class="score-bar-wrap" title="Priority score: 0/100"><div class="score-bar-fill" style="width:0%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Other</span></div>
+</div><div class="bill-row" id="bill-row-15" onclick="selectBill(15)" data-idx="15"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Other"
+     data-title="geologic hazards: california geological survey."
+     data-number="sb 831">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SB 831</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Geologic hazards: California Geological Survey.</div>
+  <div class="score-bar-wrap" title="Priority score: 0/100"><div class="score-bar-fill" style="width:0%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Other</span></div>
+</div>
+  </div>
+</div>
+      <div class="empty" id="no-results" style="display:none">No bills match your filters.</div>
+    </div>
+
+    <!-- Right: detail pane -->
+    <div class="leg-detail" id="leg-detail">
+      <div class="detail-placeholder" id="detail-placeholder">
+  <div class="detail-placeholder-inner">
+    <div style="font-size:28px;margin-bottom:12px;opacity:0.3">◈</div>
+    <div class="mono dim" style="font-size:12px">Select a bill to see details</div>
+  </div>
+</div>
+      <div class="detail-pane" id="detail-0" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 815</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 815/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Planning and zoning: very high fire hazard areas.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Wildfire</span><span class="tag tag-dim" style="font-size:10px">Housing</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="15/100">
+    <div class="score-bar-fill" style="width:15%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">15/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-1" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 629</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 629/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Wildfires: fire hazard severity zones: post-wildfire safety areas.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Wildfire</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="15/100">
+    <div class="score-bar-fill" style="width:15%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">15/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-2" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 223</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 223/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">The Wildfire Smoke and Health Outcomes Data Act.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Wildfire</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="15/100">
+    <div class="score-bar-fill" style="width:15%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">15/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-3" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 582</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 582/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Health and care facilities: licensing during emergencies or disasters.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Emergency Management</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="15/100">
+    <div class="score-bar-fill" style="width:15%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">15/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-4" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 130</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 130/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Housing.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Housing</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-5" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 130</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 130/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Housing.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Housing</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-6" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 1083</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 1083/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">California Environmental Quality Act: exemptions: housing development projects: natural and protected lands: record of proceedings.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Housing</span><span class="tag tag-dim" style="font-size:10px">Environment</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-7" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 786</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 786/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">California Pollution Control Financing Authority: name change.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Environment</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-8" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 1520</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 1520/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Public resources: conservation.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Environment</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-9" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 231</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 231/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">California Environmental Quality Act: the Office of Land Use and Climate Innovation: technical advisory.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Environment</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-10" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 1207</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 1207/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Climate change: market-based compliance mechanism: extension.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Environment</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-11" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 693</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 693/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Broadband: state oversight.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Infrastructure</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-12" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SJR 6</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SJR 6/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Federal funding for essential state infrastructure, technology, and economic development.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Infrastructure</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-13" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AJR 11</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AJR 11/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Building Resilient Infrastructure and Communities program: federal funding cuts.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Infrastructure</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-14" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">AB 1019</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/AB 1019/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Enhancing Law Enforcement Activities Subaccount: identification of unidentified human remains.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Other</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="0/100">
+    <div class="score-bar-fill" style="width:0%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">0/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div><div class="detail-pane" id="detail-15" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SB 831</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/20252026/SB 831/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Geologic hazards: California Geological Survey.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Other</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="0/100">
+    <div class="score-bar-fill" style="width:0%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">0/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ── Bill data ──────────────────────────────────────────────────────────────
+const LEG_BILLS = [{"bill_number": "SB 815", "title": "Planning and zoning: very high fire hazard areas.", "url": "https://openstates.org/ca/bills/20252026/SB 815/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Wildfire / Fire Safety", "Housing / Homelessness"], "_priority_score": 15, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 629", "title": "Wildfires: fire hazard severity zones: post-wildfire safety areas.", "url": "https://openstates.org/ca/bills/20252026/SB 629/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Wildfire / Fire Safety"], "_priority_score": 15, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 223", "title": "The Wildfire Smoke and Health Outcomes Data Act.", "url": "https://openstates.org/ca/bills/20252026/SB 223/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Wildfire / Fire Safety"], "_priority_score": 15, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 582", "title": "Health and care facilities: licensing during emergencies or disasters.", "url": "https://openstates.org/ca/bills/20252026/SB 582/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Emergency Management / Disaster"], "_priority_score": 15, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 130", "title": "Housing.", "url": "https://openstates.org/ca/bills/20252026/AB 130/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Housing / Homelessness"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 130", "title": "Housing.", "url": "https://openstates.org/ca/bills/20252026/SB 130/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Housing / Homelessness"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 1083", "title": "California Environmental Quality Act: exemptions: housing development projects: natural and protected lands: record of proceedings.", "url": "https://openstates.org/ca/bills/20252026/AB 1083/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Housing / Homelessness", "Environment / Air Quality"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 786", "title": "California Pollution Control Financing Authority: name change.", "url": "https://openstates.org/ca/bills/20252026/AB 786/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Environment / Air Quality"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 1520", "title": "Public resources: conservation.", "url": "https://openstates.org/ca/bills/20252026/AB 1520/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Environment / Air Quality"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 231", "title": "California Environmental Quality Act: the Office of Land Use and Climate Innovation: technical advisory.", "url": "https://openstates.org/ca/bills/20252026/SB 231/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Environment / Air Quality"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 1207", "title": "Climate change: market-based compliance mechanism: extension.", "url": "https://openstates.org/ca/bills/20252026/AB 1207/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Environment / Air Quality"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 693", "title": "Broadband: state oversight.", "url": "https://openstates.org/ca/bills/20252026/AB 693/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Infrastructure / Broadband"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SJR 6", "title": "Federal funding for essential state infrastructure, technology, and economic development.", "url": "https://openstates.org/ca/bills/20252026/SJR 6/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Infrastructure / Broadband"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AJR 11", "title": "Building Resilient Infrastructure and Communities program: federal funding cuts.", "url": "https://openstates.org/ca/bills/20252026/AJR 11/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Infrastructure / Broadband"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "AB 1019", "title": "Enhancing Law Enforcement Activities Subaccount: identification of unidentified human remains.", "url": "https://openstates.org/ca/bills/20252026/AB 1019/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Other"], "_priority_score": 0, "_is_rep_bill": false, "_is_butte_direct": false}, {"bill_number": "SB 831", "title": "Geologic hazards: California Geological Survey.", "url": "https://openstates.org/ca/bills/20252026/SB 831/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Other"], "_priority_score": 0, "_is_rep_bill": false, "_is_butte_direct": false}];
+let _activeBillIdx = null;
+let _activeFilters = { topic: 'all', status: 'all', repOnly: false, search: '' };
+
+// ── Selection ──────────────────────────────────────────────────────────────
+function selectBill(idx) {
+  // Deactivate old
+  if (_activeBillIdx !== null) {
+    const old = document.getElementById('bill-row-' + _activeBillIdx);
+    if (old) old.classList.remove('active');
+    const oldPane = document.getElementById('detail-' + _activeBillIdx);
+    if (oldPane) oldPane.style.display = 'none';
+  }
+  // Activate new
+  _activeBillIdx = idx;
+  const row = document.getElementById('bill-row-' + idx);
+  if (row) row.classList.add('active');
+  document.getElementById('detail-placeholder').style.display = 'none';
+  const pane = document.getElementById('detail-' + idx);
+  if (pane) pane.style.display = 'block';
+}
+
+// ── Group toggle ───────────────────────────────────────────────────────────
+function toggleGroup(sectionId) {
+  const body = document.getElementById(sectionId + '-body');
+  const arrow = document.getElementById(sectionId + '-arrow');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▸' : '▾';
+}
+
+// ── Filtering ──────────────────────────────────────────────────────────────
+function applyFilters() {
+  const rows = document.querySelectorAll('.bill-row');
+  let anyVisible = false;
+
+  rows.forEach(row => {
+    const status  = row.dataset.status || '';
+    const rep     = row.dataset.rep === 'true';
+    const topics  = (row.dataset.topics || '').split(',');
+    const title   = row.dataset.title || '';
+    const bnum    = row.dataset.number || '';
+
+    let show = true;
+
+    if (_activeFilters.status !== 'all' && status !== _activeFilters.status)
+      show = false;
+    if (_activeFilters.repOnly && !rep)
+      show = false;
+    if (_activeFilters.topic !== 'all' && !topics.includes(_activeFilters.topic))
+      show = false;
+    if (_activeFilters.search) {
+      const q = _activeFilters.search.toLowerCase();
+      if (!title.includes(q) && !bnum.includes(q)) show = false;
+    }
+
+    row.style.display = show ? 'block' : 'none';
+    if (show) anyVisible = true;
+  });
+
+  // Hide empty groups
+  document.querySelectorAll('.leg-group').forEach(grp => {
+    const visibleRows = grp.querySelectorAll('.bill-row[style="display: block"], .bill-row:not([style*="display: none"])');
+    const hasVisible = Array.from(grp.querySelectorAll('.bill-row')).some(r => r.style.display !== 'none');
+    grp.style.display = hasVisible ? 'block' : 'none';
+  });
+
+  document.getElementById('no-results').style.display = anyVisible ? 'none' : 'block';
+}
+
+function filterTopic(btn, topic) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeFilters.topic = topic;
+  applyFilters();
+}
+
+function filterStatus(val) {
+  _activeFilters.status = val;
+  applyFilters();
+}
+
+function filterRepOnly(checked) {
+  _activeFilters.repOnly = checked;
+  applyFilters();
+}
+
+function filterSearch(val) {
+  _activeFilters.search = val.toLowerCase();
+  applyFilters();
+}
+
+// Auto-select first visible bill on load
+window.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.bill-row');
+  if (first) selectBill(parseInt(first.dataset.idx));
+});
+</script>
+</div>
         </div>
     </main>
 
@@ -3258,7 +4164,7 @@ const DASHBOARD_DATA = {
     meetings: [{"date": "2026-06-02", "title": "6/2/26 Council Meeting - Jun 02, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310", "description": "The agenda for 6/2/26 Council Meeting dated Tuesday, 02 June 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 6/2/26 Council Meeting dated Tuesday, 02 June 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310"}]}, {"date": "2026-05-19", "title": "5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. - May 19, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309", "description": "The agenda for 5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. dated Tuesday, 19 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. dated Tuesday, 19 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309"}]}, {"date": "2026-05-11", "title": "3/16/26 City Council - Special Closed Session (No video) - Mar 16, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308", "description": "The agenda for 3/16/26 City Council - Special Closed Session (No video) dated Monday, 16 March 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 3/16/26 City Council - Special Closed Session (No video) dated Monday, 16 March 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308"}]}, {"date": "2026-05-07", "title": "Planning Commission - May 07, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307", "description": "The agenda for Planning Commission dated Thursday, 07 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307", "has_minutes": false, "items": [{"num": "", "title": "The agenda for Planning Commission dated Thursday, 07 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307"}]}, {"date": "2026-05-05", "title": "5/5/26 Council Meeting - May 05, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304", "description": "The agenda for 5/5/26 Council Meeting dated Tuesday, 05 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 5/5/26 Council Meeting dated Tuesday, 05 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304"}]}, {"date": "2026-04-27", "title": "Bidwell Park and Playground Commission - Apr 27, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303", "description": "The agenda for Bidwell Park and Playground Commission dated Monday, 27 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303", "has_minutes": false, "items": [{"num": "", "title": "The agenda for Bidwell Park and Playground Commission dated Monday, 27 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303"}]}, {"date": "2026-04-21", "title": "4/21/26 Council Meeting - Apr 21, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302", "description": "The agenda for 4/21/26 Council Meeting dated Tuesday, 21 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 4/21/26 Council Meeting dated Tuesday, 21 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302"}]}, {"date": "2026-04-07", "title": "4/7/26 Council Meeting - Apr 07, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298", "description": "The agenda for 4/7/26 Council Meeting dated Tuesday, 07 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 4/7/26 Council Meeting dated Tuesday, 07 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298"}]}, {"date": "2026-03-30", "title": "Bidwell Park and Playground Commission - Mar 30, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1295", "description": "The agenda for Bidwell Park and Playground Commission dated Monday, 30 March 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1295", "has_minutes": true, "items": [{"num": "", "title": "The agenda for Bidwell Park and Playground Commission dated Monday, 30 March 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1295"}]}, {"date": "2026-03-17", "title": "3/17/26 Council Meeting - Mar 17, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1288", "description": "The agenda for 3/17/26 Council Meeting dated Tuesday, 17 March 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1288", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 3/17/26 Council Meeting dated Tuesday, 17 March 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1288"}]}],
     bills: [],
     legislation: [{"bill_number": "SB 815", "title": "Planning and zoning: very high fire hazard areas.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 629", "title": "Wildfires: fire hazard severity zones: post-wildfire safety areas.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 693", "title": "Broadband: state oversight.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 1019", "title": "Enhancing Law Enforcement Activities Subaccount: identification of unidentified human remains.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 130", "title": "Housing.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 786", "title": "California Pollution Control Financing Authority: name change.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 831", "title": "Geologic hazards: California Geological Survey.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 1520", "title": "Public resources: conservation.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 231", "title": "California Environmental Quality Act: the Office of Land Use and Climate Innovation: technical advisory.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 1207", "title": "Climate change: market-based compliance mechanism: extension.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 130", "title": "Housing.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 223", "title": "The Wildfire Smoke and Health Outcomes Data Act.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AB 1083", "title": "California Environmental Quality Act: exemptions: housing development projects: natural and protected lands: record of proceedings.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SJR 6", "title": "Federal funding for essential state infrastructure, technology, and economic development.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "SB 582", "title": "Health and care facilities: licensing during emergencies or disasters.", "score": 7, "explanation": "Analysis unavailable."}, {"bill_number": "AJR 11", "title": "Building Resilient Infrastructure and Communities program: federal funding cuts.", "score": 7, "explanation": "Analysis unavailable."}],
-    updated: "Jun 7, 2026 · 16:02 UTC",
+    updated: "Jun 7, 2026 · 16:11 UTC",
     location: "Chico, CA / Butte County"
 };
 
