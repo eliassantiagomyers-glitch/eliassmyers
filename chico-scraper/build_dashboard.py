@@ -34,13 +34,15 @@ def render_meeting_cards(meetings: list) -> str:
         return '<div class="empty">No meetings scraped yet.</div>'
     cards = []
     for i, m in enumerate(meetings):
-        date     = fmt_date(m.get("date", ""))
-        title    = m.get("title", f"Meeting {date}")
-        link     = m.get("link", "#")
-        has_min  = m.get("has_minutes") or m.get("type") == "minutes"
-        items    = m.get("items") or m.get("agenda_items", [])
-        status   = "MIN" if has_min else "AGN"
-        scls     = "tag-green" if has_min else "tag-blue"
+        date         = fmt_date(m.get("date", ""))
+        title        = m.get("title", f"Meeting {date}")
+        link         = m.get("link", "#")
+        has_min      = bool(m.get("has_minutes")) or m.get("feed_type") == "minutes"
+        minutes_link = m.get("minutes_link") or m.get("minutes_doc_url")
+        minutes_title = m.get("minutes_title", "View Minutes")
+        items        = m.get("items") or m.get("agenda_items", [])
+        status       = "MIN" if has_min else "AGN"
+        scls         = "tag-green" if has_min else "tag-blue"
 
         item_rows = ""
         for it in items[:10]:
@@ -56,6 +58,10 @@ def render_meeting_cards(meetings: list) -> str:
             </button>
             <div class="xbody" id="mc{i}">{item_rows}</div>"""
 
+        minutes_row = ""
+        if has_min and minutes_link:
+            minutes_row = f'<div style="margin:4px 0 6px"><a href="{minutes_link}" target="_blank" class="mono dim" style="font-size:11px;color:var(--green)">📄 {minutes_title or "View Minutes"}</a></div>'
+
         cards.append(f"""<div class="card" data-id="council-{m.get('date',i)}">
             <div class="card-top">
                 <div class="card-meta">
@@ -67,6 +73,7 @@ def render_meeting_cards(meetings: list) -> str:
                 </div>
             </div>
             <div class="card-title"><a href="{link}" target="_blank">{title}</a></div>
+            {minutes_row}
             {expand}
         </div>""")
     return "\n".join(cards)
