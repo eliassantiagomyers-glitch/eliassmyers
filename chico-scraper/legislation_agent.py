@@ -110,10 +110,21 @@ def http_post(url: str, body: dict, headers: dict = None, timeout: int = 30) -> 
 # ── Open States API ───────────────────────────────────────────────────────────
 
 def openstates_get(path: str, api_key: str, params: dict = None) -> dict:
-    """Make a GET request to the Open States v3 API."""
+    """Make a GET request to the Open States v3 API. Retries on 429."""
     qs  = urllib.parse.urlencode(params or {})
     url = f"{OPENSTATES_BASE}{path}{'?' + qs if qs else ''}"
-    return http_get(url, headers={"X-API-KEY": api_key})
+    for attempt in range(4):
+        try:
+            return http_get(url, headers={"X-API-KEY": api_key})
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg and attempt < 3:
+                wait = 15 * (attempt + 1)
+                print(f"    Open States 429 — waiting {wait}s before retry…")
+                time.sleep(wait)
+            else:
+                raise
+    return {}
 
 
 def search_bills(api_key: str, query: str) -> list[dict]:
@@ -166,6 +177,7 @@ def get_rep_ids(api_key: str) -> dict[str, str]:
                 print(f"  WARN: No Open States ID found for {name}")
         except Exception as e:
             print(f"  Error looking up {name}: {e}")
+        time.sleep(1.5)  # rate limit between people lookups
     return rep_ids
 
 
@@ -479,7 +491,7 @@ def run_agent():
             if bid and bid not in seen_ids:
                 seen_ids.add(bid)
                 all_bills.append(b)
-        time.sleep(0.3)
+        time.sleep(1.5)  # rate limit: ~40 req/min max on free tier
 
     print(f"\n  Total unique bills: {len(all_bills)}")
 
@@ -544,6 +556,7 @@ def run_agent():
 
         # Fetch full detail (actions, votes)
         print(f"  {bill_number}: fetching detail…")
+        time.sleep(1.5)  # rate limit before each detail fetch
         detail   = get_bill_detail(openstates_key, bill_id)
         actions  = detail.get("actions", []) if detail else []
         status   = parse_bill_status(actions)
