@@ -603,7 +603,7 @@ def run_agent():
             "bill_number":      bill_number,
             "title":            title,
             "abstract":         abstract,
-            "url":              f"https://openstates.org/ca/bills/{bill.get('session','')}/{bill_number}/",
+            "url":              f"https://openstates.org/ca/bills/{bill.get('session','').replace('20252026','2025-2026')}/{bill_number}/",
             "score":            prior.get("score", 6),
             "status":           status["status"],
             "status_label":     status["status_label"],
