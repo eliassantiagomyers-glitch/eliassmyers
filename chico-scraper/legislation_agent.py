@@ -457,6 +457,20 @@ def send_telegram(token: str, chat_id: str, text: str):
 
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
+LEGISLATION_FETCH_INTERVAL_HOURS = 23  # Open States free tier: 500 req/day
+
+
+def _hours_since_last_fetch(state: dict) -> float:
+    last = state.get("legislation_last_updated")
+    if not last:
+        return 999.0
+    try:
+        dt = datetime.fromisoformat(last)
+        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+    except Exception:
+        return 999.0
+
+
 def run_agent():
     openstates_key = os.environ.get("OPENSTATES_API_KEY", "")
     gemini_key     = os.environ.get("GEMINI_API_KEY", "")
@@ -474,14 +488,27 @@ def run_agent():
     print("Legislation Agent: Open States + Gemini")
     print("=" * 55)
 
+    # ── Load state first so we can check the gate ──────────────────────────
+    state = load_state()
+    existing = {b["bill_id"]: b for b in state.get("state_legislation", [])}
+    prev_ids = set(existing.keys())
+
+    # ── Daily gate: only hit Open States once per 23h ─────────────────────
+    hours_since = _hours_since_last_fetch(state)
+    if hours_since < LEGISLATION_FETCH_INTERVAL_HOURS:
+        hrs_remaining = LEGISLATION_FETCH_INTERVAL_HOURS - hours_since
+        print(f"\nOpen States fetch skipped — last run {hours_since:.1f}h ago.")
+        print(f"Next fetch in ~{hrs_remaining:.1f}h. Using {len(existing)} cached bills.")
+        return
+
     # ── Step 1: Look up rep IDs ────────────────────────────────────────────
     print("\nLooking up Butte County rep IDs…")
     rep_ids = get_rep_ids(openstates_key)
 
     # ── Step 2: Search for CA bills across all topic areas ─────────────────
     print("\nSearching Open States for CA bills…")
-    seen_ids   = set()
-    all_bills  = []
+    seen_ids  = set()
+    all_bills = []
 
     for query in SEARCH_QUERIES:
         print(f"  '{query}'")
@@ -491,14 +518,9 @@ def run_agent():
             if bid and bid not in seen_ids:
                 seen_ids.add(bid)
                 all_bills.append(b)
-        time.sleep(1.5)  # rate limit: ~40 req/min max on free tier
+        time.sleep(2.0)  # 1 req/sec hard limit — 2s gives safe headroom
 
     print(f"\n  Total unique bills: {len(all_bills)}")
-
-    # ── Step 3: Load existing state ────────────────────────────────────────
-    state = load_state()
-    existing = {b["bill_id"]: b for b in state.get("state_legislation", [])}
-    prev_ids = set(existing.keys())
 
     # ── Step 4: Pass 1 — relevance filter (batched) ──────────────────────
     print("\nPass 1: Relevance filter…")
