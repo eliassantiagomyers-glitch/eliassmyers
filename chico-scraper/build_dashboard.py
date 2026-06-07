@@ -7,6 +7,9 @@ the Chico Policy Tracker newsroom dashboard.
 import json
 from datetime import datetime
 from pathlib import Path
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+from legislation_panel_renderer import render_legislation_panel, LEGISLATION_CSS
 
 STATE_FILE = Path(__file__).parent / "data" / "state.json"
 OUTPUT     = Path(__file__).parent / "index.html"
@@ -263,7 +266,7 @@ def build(state: dict) -> str:
 
     council_html = render_meeting_cards(meetings)
     bill_html    = render_bill_cards(bills)
-    leg_html     = render_legislation_cards(leg_bills)
+    leg_html     = render_legislation_panel(leg_bills)
 
     # Pre-serialize dashboard data for JS
     js_meetings = json.dumps([
@@ -851,6 +854,17 @@ a:hover {{ text-decoration: underline; }}
 
     /* Cards full width */
     .card {{ margin-bottom: 8px; }}
+}}
+{LEGISLATION_CSS}
+/* Legislation panel fill fix */
+#panel-legislation {{
+    display: none;
+    flex-direction: column;
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;
+}}
+#panel-legislation.active {{
+    display: flex;
 }}
 </style>
 </head>
