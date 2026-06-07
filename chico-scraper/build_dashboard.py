@@ -878,7 +878,7 @@ a:hover {{ text-decoration: underline; }}
         <span class="live-dot"></span>
         <span>Updated {updated_fmt}</span>
         <span style="color:var(--border2)">|</span>
-        <span>{n_meetings} meetings · {n_bills} tracked · {n_leg} bills</span>
+        <span>{n_meetings} meetings · {n_leg} bills</span>
     </div>
 </header>
 
@@ -893,11 +893,6 @@ a:hover {{ text-decoration: underline; }}
                 <span class="nav-icon">⬡</span>
                 <span class="nav-label">City Council</span>
                 <span class="nav-count">{n_meetings}</span>
-            </div>
-            <div class="nav-item" onclick="showPanel('bills', this)">
-                <span class="nav-icon">↻</span>
-                <span class="nav-label">Bill Tracker</span>
-                <span class="nav-count">{n_bills}</span>
             </div>
         </div>
 
@@ -950,17 +945,6 @@ a:hover {{ text-decoration: underline; }}
                 </div>
             </div>
             <div class="main-body">{council_html}</div>
-        </div>
-
-        <!-- Bill tracker panel -->
-        <div id="panel-bills" class="panel">
-            <div class="main-header">
-                <div>
-                    <div class="main-title">Bill Tracker</div>
-                    <div class="main-subtitle mono">Recurring agenda items across meetings · {n_bills} tracked</div>
-                </div>
-            </div>
-            <div class="main-body">{bill_html}</div>
         </div>
 
         <!-- CA Legislation panel -->
