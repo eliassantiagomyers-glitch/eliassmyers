@@ -1,54 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog &mdash; Elias S. Myers</title>
-  <meta name="description" content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
+  <link rel="icon" type="image/png" href="websiteicon.png">
+  <meta name="description"
+    content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
   <meta name="author" content="Elias S. Myers">
   <meta property="og:title" content="Blog &mdash; Elias S. Myers">
-  <meta property="og:description" content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
+  <meta property="og:description"
+    content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
   <meta property="og:url" content="https://eliassmyers.wiki/blog.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Blog &mdash; Elias S. Myers">
-  <meta name="twitter:description" content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
+  <meta name="twitter:description"
+    content="Personal writing by Elias S. Myers. Essays, dispatches, and observations since 2021.">
   <link rel="canonical" href="https://eliassmyers.wiki/blog.html">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<div id="wrap">
+  <div id="wrap">
 
-  <header id="site-header">
-    <h1>Elias S. Myers</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="bylines.html">Bylines</a>
-      <a href="blog.html" class="active">Blog</a>
-      <a href="about.html">About</a>
-    </nav>
-  </header>
+    <header id="site-header">
+      <h1>Elias S. Myers</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="bylines.html">Bylines</a>
+        <a href="blog.html" class="active">Blog</a>
+        <a href="about.html">About</a>
+      </nav>
+    </header>
 
-  <h2>Blog</h2>
-  <p style="font-size:0.88rem;color:#555;font-family:Arial,Helvetica,sans-serif;">
-    Personal writing. Originally published on <em>elias myers &mdash; thoughts &amp; hiccups</em>, 2021&ndash;present.
-  </p>
+    <h2>Blog</h2>
+    <p style="font-size:0.88rem;color:#555;font-family:Arial,Helvetica,sans-serif;">
+      Personal writing. Originally published on <em>elias myers &mdash; thoughts &amp; hiccups</em>, 2021&ndash;present.
+    </p>
 
-  <ul class="post-list" id="all-posts">
-  </ul>
+    <ul class="post-list" id="all-posts">
+    </ul>
 
-  <footer id="site-footer">
-    &copy; Elias S. Myers &mdash;
-    <a href="mailto:eliassantiagomyers@berkeley.edu">eliassantiagomyers@berkeley.edu</a>
-  </footer>
+    <footer id="site-footer">
+      &copy; Elias S. Myers &mdash;
+      <a href="mailto:eliassantiagomyers@berkeley.edu">eliassantiagomyers@berkeley.edu</a>
+    </footer>
 
-</div>
+  </div>
 
-<script src="posts.js"></script>
-<script>
-  const container = document.getElementById('all-posts');
-  POSTS.forEach(p => {
-    container.innerHTML += `
+  <script src="posts.js"></script>
+  <script>
+    const container = document.getElementById('all-posts');
+    POSTS.forEach(p => {
+      container.innerHTML += `
       <li>
         <span class="post-date">${p.date}</span>
         <span class="post-title">
@@ -56,7 +62,8 @@
           <div class="post-excerpt">${p.excerpt}</div>
         </span>
       </li>`;
-  });
-</script>
+    });
+  </script>
 </body>
+
 </html>
