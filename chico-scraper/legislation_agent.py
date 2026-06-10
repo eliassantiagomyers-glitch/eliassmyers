@@ -27,7 +27,7 @@ import os
 import time
 import urllib.request
 import urllib.parse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -129,13 +129,16 @@ def openstates_get(path: str, api_key: str, params: dict = None) -> dict:
 
 def search_bills(api_key: str, query: str) -> list[dict]:
     """Search CA bills by keyword. Returns list of bill summary dicts."""
+    updated_since = (datetime.now(timezone.utc) - timedelta(days=90)).strftime('%Y-%m-%d')
     try:
         resp = openstates_get("/bills", api_key, {
-            "jurisdiction": "ca",
-            "q":            query,
-            "session":      "20252026",
-            "per_page":     RESULTS_PER_QUERY,
-            "include":      "sponsorships",
+            "jurisdiction":  "ca",
+            "q":             query,
+            "session":       "20252026",
+            "per_page":      RESULTS_PER_QUERY,
+            "include":       "sponsorships",
+            "updated_since": updated_since,  # only bills active in last 90 days
+            "sort":          "updated_desc", # most recently active first
         })
         return resp.get("results", [])
     except Exception as e:
@@ -235,22 +238,33 @@ def parse_bill_status(actions: list[dict]) -> dict:
             committee = a.get("description", "")[:60]
             break
 
-    # Derive status from action keywords
+    # Derive status from latest action ONLY (not full history).
+    # Checking all_desc for "introduced" was a catch-all that swallowed
+    # every bill that had ever been introduced — i.e. all of them.
     desc_lower = last_action.lower()
     all_desc   = " ".join(a.get("description", "").lower() for a in sorted_actions)
 
+    # Terminal states — check latest action first
     if any(w in desc_lower for w in ["chaptered", "signed by governor", "enacted"]):
         status, label = "passed", "Signed into Law"
-    elif any(w in desc_lower for w in ["vetoed"]):
+    elif "vetoed" in desc_lower:
         status, label = "vetoed", "Vetoed"
-    elif any(w in desc_lower for w in ["failed", "died", "held in committee"]):
+    elif any(w in desc_lower for w in ["failed passage", "failed", "died", "held in committee"]):
         status, label = "failed", "Failed"
-    elif any(w in desc_lower for w in ["floor", "third reading", "second reading"]):
+    # Active states — latest action
+    elif any(w in desc_lower for w in ["third reading", "second reading", "floor"]):
         status, label = "floor", "On Floor"
-    elif any(w in desc_lower for w in ["committee", "hearing"]):
+    elif any(w in desc_lower for w in ["committee", "hearing", "referred to"]):
         status, label = "committee", "In Committee"
-    elif any(w in all_desc for w in ["introduced", "filed"]):
+    elif any(w in desc_lower for w in ["read first time", "introduced", "filed"]):
         status, label = "introduced", "Introduced"
+    # Fallback: scan full history for terminal states we may have missed
+    elif any(w in all_desc for w in ["chaptered", "signed by governor", "enacted"]):
+        status, label = "passed", "Signed into Law"
+    elif "vetoed" in all_desc:
+        status, label = "vetoed", "Vetoed"
+    elif any(w in all_desc for w in ["failed passage", "died"]):
+        status, label = "failed", "Failed"
     else:
         status, label = "active", "Active"
 
@@ -647,7 +661,31 @@ def run_agent():
         newly_flagged.append(flagged_bill)
         print(f"    ★ Flagged: {bill_number} (score {prior.get('score',6)})")
 
-    # ── Step 6: Sort and save ──────────────────────────────────────────────
+    # ── Step 6: Evict terminal bills older than 30 days ──────────────────
+    TERMINAL_STATUSES = {"vetoed", "failed"}
+    eviction_cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+
+    def _flagged_at(b: dict) -> datetime:
+        try:
+            dt = datetime.fromisoformat(b.get("flagged_at", ""))
+            # Make tz-aware if naive
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except Exception:
+            return eviction_cutoff  # treat unparseable as old → evict
+
+    pre_evict = len(flagged)
+    flagged = [
+        b for b in flagged
+        if b.get("status") not in TERMINAL_STATUSES
+        or _flagged_at(b) > eviction_cutoff
+    ]
+    evicted = pre_evict - len(flagged)
+    if evicted:
+        print(f"\n  Evicted {evicted} terminal bill(s) older than 30 days.")
+
+    # ── Step 7: Sort and save ──────────────────────────────────────────────
     flagged.sort(key=lambda x: (
         {"passed": 0, "floor": 1, "committee": 2, "introduced": 3,
          "active": 4, "failed": 5, "vetoed": 6}.get(x.get("status", ""), 9),
@@ -661,7 +699,7 @@ def run_agent():
 
     print(f"\nDone. {len(flagged)} bills saved, {len(newly_flagged)} newly flagged.")
 
-    # ── Step 7: Telegram notifications ────────────────────────────────────
+    # ── Step 8: Telegram notifications ────────────────────────────────────
     if tg_token and tg_chat and newly_flagged:
         for bill in newly_flagged[:5]:
             votes_str = ""
