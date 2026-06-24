@@ -3,7 +3,7 @@
 // { title: "Article title", publication: "Publication Name", url: "https://...", date: "YYYY-MM-DD" }
 
 var BYLINES = [
-  { title: 'Police suspect Chico library shooter was an attempted Columbine 'copycat'', publication: 'ChicoSol', url: 'https://chicosol.org/2026/06/23/police-suspect-chico-library-shooter-was-an-attempted-columbine-copycat/', date: '2026-06-23' },
+  { title: 'Police suspect Chico library shooter was an attempted Columbine \'copycat'\', publication: 'ChicoSol', url: 'https://chicosol.org/2026/06/23/police-suspect-chico-library-shooter-was-an-attempted-columbine-copycat/', date: '2026-06-23' },
   { title: 'Shooting at Chico library leaves 2 dead, child injured', publication: 'ChicoSol', url: 'https://chicosol.org/2026/06/22/shooting-at-chico-library-leaves-2-dead-child-injured/', date: '2026-06-22' },
   { title: 'Rave Against the Machine', publication: 'Berkeley Political Review', url: 'https://bpr.studentorg.berkeley.edu/2026/06/15/rave-against-the-machine/', date: '2026-06-15' },
   { title: 'Last Chopper Out of Saigon, or a Dispatch from the Underclass', publication: 'Medium', url: 'https://medium.com/the-secret-history-of-america/last-chopper-out-of-saigon-or-a-dispatch-from-the-underclass-805dc3e17c28', date: '2026-05-06' },
