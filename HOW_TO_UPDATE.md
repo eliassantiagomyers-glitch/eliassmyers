@@ -1,5 +1,9 @@
 # How to update the site
 
+# How to push to github:
+# normal push: git add . && git commit -m "message" && git push origin main
+# if github is ahead of local, run this: git pull --rebase origin main
+
 ## Publish a new blog post
 
 ```bash
