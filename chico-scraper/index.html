@@ -924,9 +924,9 @@ a:hover { text-decoration: underline; }
     <div class="header-spacer"></div>
     <div class="header-meta">
         <span class="live-dot"></span>
-        <span>Updated Jun 29, 2026 · 14:47 UTC</span>
+        <span>Updated Jun 29, 2026 · 21:26 UTC</span>
         <span style="color:var(--border2)">|</span>
-        <span>139 meetings · 0 bills</span>
+        <span>139 meetings · 1 bills</span>
     </div>
 </header>
 
@@ -951,7 +951,7 @@ a:hover { text-decoration: underline; }
             <div class="nav-item" onclick="showPanel('legislation', this)">
                 <span class="nav-icon">◈</span>
                 <span class="nav-label">CA Legislation</span>
-                <span class="nav-count">0</span>
+                <span class="nav-count">1</span>
             </div>
         </div>
 
@@ -3248,10 +3248,215 @@ a:hover { text-decoration: underline; }
             <div class="main-header">
                 <div>
                     <div class="main-title">California Legislation</div>
-                    <div class="main-subtitle mono">Open States · Gemini relevance filter · 0 flagged for Butte County</div>
+                    <div class="main-subtitle mono">Open States · Gemini relevance filter · 1 flagged for Butte County</div>
                 </div>
             </div>
-            <div class="main-body"><div class="empty">No bills flagged yet.</div></div>
+            <div class="main-body">
+<div class="leg-panel-wrap">
+
+  <!-- Filter bar -->
+  <div class="leg-filter-bar">
+    <div class="leg-filter-row">
+      <input class="leg-search" type="text" placeholder="Search bills…" oninput="filterSearch(this.value)">
+      <select class="leg-select" onchange="filterStatus(this.value)">
+        <option value="all">All Statuses</option>
+        <option value="floor">On Floor</option>
+        <option value="committee">In Committee</option>
+        <option value="introduced">Introduced</option>
+        <option value="passed">Passed</option>
+      </select>
+      <label class="leg-toggle-label">
+        <input type="checkbox" id="rep-only-toggle" onchange="filterRepOnly(this.checked)">
+        Rep bills only
+      </label>
+    </div>
+    <div class="leg-topic-chips"><button class="filter-chip active" onclick="filterTopic(this,'all')">All Topics</button><button class="filter-chip" onclick="filterTopic(this,'Wildfire / Fire Safety')" data-topic="Wildfire / Fire Safety">Wildfire</button><button class="filter-chip" onclick="filterTopic(this,'Water / Oroville Dam')" data-topic="Water / Oroville Dam">Water</button><button class="filter-chip" onclick="filterTopic(this,'Agriculture / Farming')" data-topic="Agriculture / Farming">Agriculture</button><button class="filter-chip" onclick="filterTopic(this,'Emergency Management / Disaster')" data-topic="Emergency Management / Disaster">Emergency Management</button><button class="filter-chip" onclick="filterTopic(this,'Education / CSU Chico')" data-topic="Education / CSU Chico">Education</button><button class="filter-chip" onclick="filterTopic(this,'Housing / Homelessness')" data-topic="Housing / Homelessness">Housing</button><button class="filter-chip" onclick="filterTopic(this,'Environment / Air Quality')" data-topic="Environment / Air Quality">Environment</button><button class="filter-chip" onclick="filterTopic(this,'Infrastructure / Broadband')" data-topic="Infrastructure / Broadband">Infrastructure</button></div>
+  </div>
+
+  <!-- Two-pane layout -->
+  <div class="leg-body">
+
+    <!-- Left: grouped bill list -->
+    <div class="leg-list" id="leg-list">
+      <div class="leg-group" id="grp-tier2--Infrastructure---Broadband">
+  <div class="leg-group-header" onclick="toggleGroup('grp-tier2--Infrastructure---Broadband')" style="--gc:var(--text2);--gbg:var(--bg4)">
+    <span class="leg-group-toggle" id="grp-tier2--Infrastructure---Broadband-arrow">▸</span>
+    <span class="leg-group-label">Infrastructure / Broadband</span>
+    <span class="leg-group-count mono">1</span>
+  </div>
+  <div class="leg-group-body" id="grp-tier2--Infrastructure---Broadband-body" style="display:none">
+    <div class="bill-row" id="bill-row-0" onclick="selectBill(0)" data-idx="0"
+     data-status="introduced"
+     data-rep="false"
+     data-topics="Infrastructure / Broadband"
+     data-title="federal funding for essential state infrastructure, technology, and economic development."
+     data-number="sjr 6">
+  <div class="bill-row-top">
+    <span class="mono bill-num-sm">SJR 6</span>
+    <span class="tag tag-blue" style="font-size:9px;padding:1px 5px">Introduced</span>
+    
+    
+  </div>
+  <div class="bill-row-title">Federal funding for essential state infrastructure, technology, and economic development.</div>
+  <div class="score-bar-wrap" title="Priority score: 8/100"><div class="score-bar-fill" style="width:8%;background:var(--text3)"></div></div>
+  <div class="bill-row-topics"><span class="topic-chip">Infrastructure</span></div>
+</div>
+  </div>
+</div>
+      <div class="empty" id="no-results" style="display:none">No bills match your filters.</div>
+    </div>
+
+    <!-- Right: detail pane -->
+    <div class="leg-detail" id="leg-detail">
+      <div class="detail-placeholder" id="detail-placeholder">
+  <div class="detail-placeholder-inner">
+    <div style="font-size:28px;margin-bottom:12px;opacity:0.3">◈</div>
+    <div class="mono dim" style="font-size:12px">Select a bill to see details</div>
+  </div>
+</div>
+      <div class="detail-pane" id="detail-0" style="display:none"><div class="detail-bill-header">
+  <div class="detail-bill-num-row">
+    <span class="mono detail-bnum">SJR 6</span>
+    <span class="tag tag-blue">Introduced</span>
+    
+    <a href="https://openstates.org/ca/bills/2025-2026/SJR 6/" target="_blank" class="detail-ext-link">Open States ↗</a>
+  </div>
+  <div class="detail-bill-title">Federal funding for essential state infrastructure, technology, and economic development.</div>
+  <div class="detail-topics" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-dim" style="font-size:10px">Infrastructure</span></div>
+</div>
+
+<div class="detail-score-row">
+  <span class="detail-label">Priority</span>
+  <div class="score-bar-wrap detail-score-bar" title="8/100">
+    <div class="score-bar-fill" style="width:8%;background:var(--text3)"></div>
+  </div>
+  <span class="mono dim" style="font-size:10px">8/100</span>
+</div>
+
+
+
+
+<div class="detail-section">
+  <div class="detail-section-label">Bill Info</div>
+  
+  
+  
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-label">Rep Votes</div>
+  <div class="rep-block-detail"><div class="dim" style="font-size:11px;font-family:'IBM Plex Mono',monospace">No recorded votes yet for Gallagher or Dahle.</div></div>
+</div>
+
+</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ── Bill data ──────────────────────────────────────────────────────────────
+const LEG_BILLS = [{"bill_number": "SJR 6", "title": "Federal funding for essential state infrastructure, technology, and economic development.", "url": "https://openstates.org/ca/bills/2025-2026/SJR 6/", "status": "introduced", "status_label": "Introduced", "explanation": "Analysis unavailable.", "local_angle": "", "last_action": "", "last_action_date": "", "committee": "", "sponsors": [], "rep_votes": {}, "rep_vote_notes": {}, "timeline": [], "_topics_detected": ["Infrastructure / Broadband"], "_priority_score": 8, "_is_rep_bill": false, "_is_butte_direct": false}];
+let _activeBillIdx = null;
+let _activeFilters = { topic: 'all', status: 'all', repOnly: false, search: '' };
+
+// ── Selection ──────────────────────────────────────────────────────────────
+function selectBill(idx) {
+  // Deactivate old
+  if (_activeBillIdx !== null) {
+    const old = document.getElementById('bill-row-' + _activeBillIdx);
+    if (old) old.classList.remove('active');
+    const oldPane = document.getElementById('detail-' + _activeBillIdx);
+    if (oldPane) oldPane.style.display = 'none';
+  }
+  // Activate new
+  _activeBillIdx = idx;
+  const row = document.getElementById('bill-row-' + idx);
+  if (row) row.classList.add('active');
+  document.getElementById('detail-placeholder').style.display = 'none';
+  const pane = document.getElementById('detail-' + idx);
+  if (pane) pane.style.display = 'block';
+}
+
+// ── Group toggle ───────────────────────────────────────────────────────────
+function toggleGroup(sectionId) {
+  const body = document.getElementById(sectionId + '-body');
+  const arrow = document.getElementById(sectionId + '-arrow');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▸' : '▾';
+}
+
+// ── Filtering ──────────────────────────────────────────────────────────────
+function applyFilters() {
+  const rows = document.querySelectorAll('.bill-row');
+  let anyVisible = false;
+
+  rows.forEach(row => {
+    const status  = row.dataset.status || '';
+    const rep     = row.dataset.rep === 'true';
+    const topics  = (row.dataset.topics || '').split(',');
+    const title   = row.dataset.title || '';
+    const bnum    = row.dataset.number || '';
+
+    let show = true;
+
+    if (_activeFilters.status !== 'all' && status !== _activeFilters.status)
+      show = false;
+    if (_activeFilters.repOnly && !rep)
+      show = false;
+    if (_activeFilters.topic !== 'all' && !topics.includes(_activeFilters.topic))
+      show = false;
+    if (_activeFilters.search) {
+      const q = _activeFilters.search.toLowerCase();
+      if (!title.includes(q) && !bnum.includes(q)) show = false;
+    }
+
+    row.style.display = show ? 'block' : 'none';
+    if (show) anyVisible = true;
+  });
+
+  // Hide empty groups
+  document.querySelectorAll('.leg-group').forEach(grp => {
+    const visibleRows = grp.querySelectorAll('.bill-row[style="display: block"], .bill-row:not([style*="display: none"])');
+    const hasVisible = Array.from(grp.querySelectorAll('.bill-row')).some(r => r.style.display !== 'none');
+    grp.style.display = hasVisible ? 'block' : 'none';
+  });
+
+  document.getElementById('no-results').style.display = anyVisible ? 'none' : 'block';
+}
+
+function filterTopic(btn, topic) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeFilters.topic = topic;
+  applyFilters();
+}
+
+function filterStatus(val) {
+  _activeFilters.status = val;
+  applyFilters();
+}
+
+function filterRepOnly(checked) {
+  _activeFilters.repOnly = checked;
+  applyFilters();
+}
+
+function filterSearch(val) {
+  _activeFilters.search = val.toLowerCase();
+  applyFilters();
+}
+
+// Auto-select first visible bill on load
+window.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.bill-row');
+  if (first) selectBill(parseInt(first.dataset.idx));
+});
+</script>
+</div>
         </div>
     </main>
 
@@ -3304,8 +3509,8 @@ a:hover { text-decoration: underline; }
 const DASHBOARD_DATA = {
     meetings: [{"date": "2026-06-26", "title": "Bidwell Park and Playground Commission - Jun 29, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&event_id=1246", "description": "The agenda for Bidwell Park and Playground Commission dated Monday, 29 June 2026 has been published. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&event_id=1246", "has_minutes": false, "items": [{"num": "", "title": "The agenda for Bidwell Park and Playground Commission dated Monday, 29 June 2026  has been published. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&event_id=1246"}]}, {"date": "2026-06-16", "title": "06/16/26 Council Meeting - Jun 16, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1311", "description": "The agenda for 06/16/26 Council Meeting dated Tuesday, 16 June 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1311", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 06/16/26 Council Meeting dated Tuesday, 16 June 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1311"}]}, {"date": "2026-06-02", "title": "6/2/26 Council Meeting - Jun 02, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310", "description": "The agenda for 6/2/26 Council Meeting dated Tuesday, 02 June 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 6/2/26 Council Meeting dated Tuesday, 02 June 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1310"}]}, {"date": "2026-05-19", "title": "5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. - May 19, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309", "description": "The agenda for 5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. dated Tuesday, 19 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 5/19/26 Council Meeting - Budget Session Begins at 1:00 p.m. dated Tuesday, 19 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1309"}]}, {"date": "2026-05-11", "title": "3/16/26 City Council - Special Closed Session (No video) - Mar 16, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308", "description": "The agenda for 3/16/26 City Council - Special Closed Session (No video) dated Monday, 16 March 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 3/16/26 City Council - Special Closed Session (No video) dated Monday, 16 March 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1308"}]}, {"date": "2026-05-07", "title": "Planning Commission - May 07, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307", "description": "The agenda for Planning Commission dated Thursday, 07 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307", "has_minutes": false, "items": [{"num": "", "title": "The agenda for Planning Commission dated Thursday, 07 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1307"}]}, {"date": "2026-05-05", "title": "5/5/26 Council Meeting - May 05, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304", "description": "The agenda for 5/5/26 Council Meeting dated Tuesday, 05 May 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 5/5/26 Council Meeting dated Tuesday, 05 May 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1304"}]}, {"date": "2026-04-27", "title": "Bidwell Park and Playground Commission - Apr 27, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303", "description": "The agenda for Bidwell Park and Playground Commission dated Monday, 27 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303", "has_minutes": false, "items": [{"num": "", "title": "The agenda for Bidwell Park and Playground Commission dated Monday, 27 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1303"}]}, {"date": "2026-04-21", "title": "4/21/26 Council Meeting - Apr 21, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302", "description": "The agenda for 4/21/26 Council Meeting dated Tuesday, 21 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302", "has_minutes": true, "items": [{"num": "", "title": "The agenda for 4/21/26 Council Meeting dated Tuesday, 21 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1302"}]}, {"date": "2026-04-07", "title": "4/7/26 Council Meeting - Apr 07, 2026", "link": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298", "description": "The agenda for 4/7/26 Council Meeting dated Tuesday, 07 April 2026 has been archived. Access it here: https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298", "has_minutes": false, "items": [{"num": "", "title": "The agenda for 4/7/26 Council Meeting dated Tuesday, 07 April 2026  has been archived. Access it here:"}, {"num": "", "title": "https://chico-ca.granicus.com/AgendaViewer.php?view_id=2&clip_id=1298"}]}],
     bills: [],
-    legislation: [],
-    updated: "Jun 29, 2026 · 14:47 UTC",
+    legislation: [{"bill_number": "SJR 6", "title": "Federal funding for essential state infrastructure, technology, and economic development.", "score": 7, "explanation": "Analysis unavailable."}],
+    updated: "Jun 29, 2026 · 21:26 UTC",
     location: "Chico, CA / Butte County"
 };
 
