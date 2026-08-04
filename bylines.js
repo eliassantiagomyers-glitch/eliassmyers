@@ -3,6 +3,7 @@
 // { title: "Article title", publication: "Publication Name", url: "https://...", date: "YYYY-MM-DD" }
 
 var BYLINES = [
+  { title: 'Chico PD granted ICE, Border Patrol, access to its ALPR data', publication: 'ChicoSol', url: 'https://chicosol.org/2026/07/25/chico-pd-granted-ice-border-patrol-access-to-its-alpr-data/', date: '2026-07-25' },
   { title: 'Suspect in library shooting pleads not guilty', publication: 'ChicoSol', url: 'https://chicosol.org/2026/07/16/suspect-in-library-shooting-pleads-not-guilty/', date: '2026-07-16' },
   { title: 'DA: Suspect had fascination with mass shooters', publication: 'ChicoSol', url: 'https://chicosol.org/2026/06/25/da-suspect-had-fascination-with-mass-shooters/', date: '2026-06-25' },
   { title: 'Police suspect Chico library shooter was an attempted Columbine \'copycat\'', publication: 'ChicoSol', url: 'https://chicosol.org/2026/06/23/police-suspect-chico-library-shooter-was-an-attempted-columbine-copycat/', date: '2026-06-23' },
