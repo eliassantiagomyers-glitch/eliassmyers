@@ -10,7 +10,7 @@
 ./new-post.sh "Your Post Title"
 ```
 
-This creates the HTML file, opens it in your terminal editor (nano by default, or set `EDITOR=vim` etc.), then commits and pushes to GitHub when you save and close. The post will be live within about a minute.
+This creates the HTML file, opens it in your terminal elias (nano by default, or set `EDITOR=vim` etc.), then commits and pushes to GitHub when you save and close. The post will be live within about a minute.
 
 To use a different editor permanently, add this to your `~/.zshrc` or `~/.bash_profile`:
 
