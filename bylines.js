@@ -3,6 +3,7 @@
 // { title: "Article title", publication: "Publication Name", url: "https://...", date: "YYYY-MM-DD" }
 
 var BYLINES = [
+  { title: 'Community members call for ALPR, police oversight', publication: 'ChicoSol', url: 'https://chicosol.org/2026/08/18/community-members-call-for-alpr-police-oversight/', date: '2026-08-19' },
   { title: 'County jail responds to disability rights complaints', publication: 'ChicoSol', url: 'https://chicosol.org/2026/08/11/county-jail-responds-to-disability-rights-complaints/', date: '2026-08-11' },
   { title: 'Police chief responds to data sharing controversy', publication: 'ChicoSol', url: 'https://chicosol.org/2026/08/05/police-chief-responds-to-data-sharing-controversy/', date: '2026-08-05' },
   { title: 'City launches internal investigation into data sharing with federal agencies', publication: 'ChicoSol', url: 'https://chicosol.org/2026/07/28/city-launches-internal-investigation-into-data-sharing-with-federal-agencies/', date: '2026-07-28' },
