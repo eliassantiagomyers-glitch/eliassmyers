@@ -3,6 +3,7 @@
 // { title: "Article title", publication: "Publication Name", url: "https://...", date: "YYYY-MM-DD" }
 
 var BYLINES = [
+  { title: 'Butte County ICE activity remains high in 2026', publication: 'ChicoSol', url: 'https://chicosol.org/2026/10/01/butte-county-ice-activity-remains-high-in-2026/', date: '2026-10-01' },
   { title: 'Chico Unified mints AI & tech advisory committee', publication: 'ChicoSol', url: 'https://chicosol.org/2026/09/24/chico-unified-mints-ai-tech-advisory-committee/', date: '2026-09-24' },
   { title: 'Council votes to further ALPR audit at cost of \$6,000', publication: 'ChicoSol', url: 'https://chicosol.org/2026/09/22/council-votes-to-further-alpr-audit-at-cost-of-6000/', date: '2026-09-22' },
   { title: 'Chico PD confirms ICE access, data loss in new report', publication: 'ChicoSol', url: 'https://chicosol.org/2026/09/18/chico-pd-confirms-ice-access-data-loss-in-new-report/', date: '2026-09-18' },
