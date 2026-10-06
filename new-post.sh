@@ -41,6 +41,8 @@ cat > "$POST_FILE" << HTMLEOF
       <a href="../index.html">Home</a>
       <a href="../bylines.html">Bylines</a>
       <a href="../blog.html" class="active">Blog</a>
+      <a href="../projects.html">Projects</a>
+      <a href="../about.html">About</a>
     </nav>
   </header>
 
