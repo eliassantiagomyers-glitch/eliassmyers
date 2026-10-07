@@ -1,6 +1,5 @@
 // Blog posts data
 var POSTS = [
-  { title: 'My trip to New York', date: '2026-10-06', slug: 'my-trip-to-new-york', excerpt: 'Next week, Callum and Fiona and I are going to New York City.' },
   { title: 'Restaurants are too expensive and everything sucks', date: '2026-10-06', slug: 'restaurants-are-too-expensive-and-everything-sucks', excerpt: 'The question: why does everything suck? has been stuck in my head. As I listened to a recent episode of The Daily, in which the host explained how the entire restaurant business was broken, that quest' },
   { title: 'Dinner with a twink and a nerd', date: '2025-05-22', slug: 'dinner-with-a-twink-and-a-nerd', excerpt: 'I’ll be late of course. They’ll be sitting there, waiting patiently for me to arrive and order for them. I’ll show up and sit across from them. We’ll drink plenty of alcohol and I’ll drink more than…' },
   { title: 'That is not what I meant, at all', date: '2025-03-10', slug: 'that-is-not-what-i-meant-at-all', excerpt: 'Oh, damn sky! Can I get a break from this rain! Can I have but a glimpse of the blue sea above?  No, for that would be fair, and life’s not fair.     You know that. It would be unfair to all the wet…' },
