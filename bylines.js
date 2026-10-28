@@ -3,6 +3,7 @@
 // { title: "Article title", publication: "Publication Name", url: "https://...", date: "YYYY-MM-DD" }
 
 var BYLINES = [
+  { title: 'Neglect and tragedy in Butte County Jail', publication: 'ChicoSol', url: 'https://chicosol.org/2026/10/28/neglect-and-tragedy-in-butte-county-jail/', date: '2026-10-28' },
   { title: 'High gas prices force drivers to sacrifice and strategize', publication: 'ChicoSol', url: 'https://chicosol.org/2026/10/25/high-gas-prices-force-drivers-to-sacrifice-and-strategize/', date: '2026-10-25' },
   { title: 'Butte County ICE activity remains high in 2026', publication: 'ChicoSol', url: 'https://chicosol.org/2026/10/01/butte-county-ice-activity-remains-high-in-2026/', date: '2026-10-01' },
   { title: 'Chico Unified mints AI & tech advisory committee', publication: 'ChicoSol', url: 'https://chicosol.org/2026/09/24/chico-unified-mints-ai-tech-advisory-committee/', date: '2026-09-24' },
